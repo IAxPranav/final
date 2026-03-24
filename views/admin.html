@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Followup Management</title>
+     <link rel="stylesheet" href="admin.css">
+    <!-- <link rel="stylesheet" href="Enquirystyle.css"> -->
+</head>
+
+<body>
+    <h1>Admin Panel - Followup Management</h1>
+    <div id="charts" style="margin-top:20px; display:flex; gap:20px; flex-wrap:wrap;"></div>
+
+    <section>
+        <section id="followups" class="tab-content">
+            <div class="followup-container" id="followupManager"></div>
+            <div class="card">
+                <h3>Pending Follow-ups</h3>
+                <div id="followup-filters" style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <label>Department: <select id="filter-dept"><option value="">All</option></select></label>
+                    <label>Staff: <select id="filter-staff"><option value="">All</option></select></label>
+                    <label>Status: <select id="filter-status"><option value="">All</option><option value="no-followup">No follow-up yet</option><option value="followup">Has followup</option></select></label>
+                    <label>Search: <input id="filter-search" placeholder="Student name"></label>
+                    <button id="filter-reset" class="start-btn">Reset</button>
+                </div>
+                <div class="student-followup-box" id="student-followup-box">
+
+                </div>
+            </div>
+        </section>
+
+        <section id="staff-management" class="tab-content" style="margin-top: 40px;">
+            <div class="card">
+                <h3>Staff Assignment Management</h3>
+                <p class="small">Control which staff members receive automatic student assignments.</p>
+                <div style="overflow-x: auto; margin-top: 15px;">
+                    <table class="followup-table" id="staff-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Department</th>
+                                <th>Assignment Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </section>
+
+        <!-- Chart.js for statistics -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="admin.js"></script>
+        <div id="toast" style="position:fixed;right:20px;bottom:20px;padding:12px 18px;border-radius:6px;background:#27ae60;color:white;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.15)"></div>
+</body>
+
+</html>

@@ -1,0 +1,491 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #f4f7fe;
+    color: #333;
+}
+
+/* Navbar & Tabs */
+.navbar {
+    background: #fff;
+    padding: 0 2rem;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #4318FF;
+}
+
+.tab-btn {
+    padding: 24px 15px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #a3aed0;
+    border-bottom: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+    color: #4318FF;
+    border-bottom: 3px solid #4318FF;
+}
+
+/* Layout */
+.content {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.4s;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
+}
+
+h3 {
+    margin-bottom: 20px;
+    color: #1B2559;
+}
+
+/* Form Styles */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2B3674;
+}
+
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #E0E5F2;
+    border-radius: 10px;
+    outline: none;
+}
+
+.primary-btn {
+    background: #4318FF;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Follow-up Section */
+.student-followup-box {
+    border: 1px solid #E0E5F2;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.student-info {
+    padding: 15px 20px;
+    background: #f8f9ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.followup-details {
+    padding: 20px;
+    display: none;
+    background: white;
+}
+
+.followup-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+.followup-table th,
+.followup-table td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.add-remark {
+    display: flex;
+    gap: 10px;
+}
+
+.remark-select {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.action-btn {
+    background: #4318FF;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.save-btn {
+    background: #05CD99;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.followup-table tbody tr:last-child {
+    background-color: #f0fff4;
+    /* Light green for the newest entry */
+    font-weight: 500;
+}
+
+.followup-details {
+    border-top: 1px solid #E0E5F2;
+    transition: all 0.3s ease-in-out;
+}
+
+.followup-table th {
+    background-color: #f8f9ff;
+    color: #4318FF;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.followup-table td:first-child {
+    font-weight: 700;
+    color: #a3aed0;
+}
+
+.add-remark {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #E0E5F2;
+}
+
+/* Container for the input and button */
+.add-remark-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fcfcff;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+}
+
+.remark-select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background-color: white;
+}
+
+.button-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.save-btn.full-width {
+    width: 200px;
+    /* Or 100% if you want it to fill the row */
+    padding: 12px;
+    background-color: #05CD99;
+    /* Green for success/adding */
+    transition: all 0.2s ease;
+}
+
+.save-btn:active {
+    transform: scale(0.98);
+}
+
+/* Success flash message */
+.success-msg {
+    color: #05CD99;
+    font-weight: 600;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.success-msg.show {
+    opacity: 1;
+}
+
+.followup-details {
+    padding: 20px;
+    display: none;
+    /* Hidden by default */
+    background: #fff;
+}
+
+.add-remark-container {
+    margin-bottom: 25px;
+    /* Space between input and table */
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f4f7fe;
+}
+
+.save-btn {
+    background-color: #4318FF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.success-msg {
+    color: #05CD99;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-left: 10px;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.success-msg.show {
+    opacity: 1;
+}
+
+/* Table styling for empty state */
+.followup-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.followup-table th {
+    text-align: left;
+    padding: 12px;
+    background: #f8f9ff;
+    border-radius: 4px;
+}
+
+.followup-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Navbar layout adjustment */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Profile Dropdown Styles */
+.profile-container {
+    position: relative;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f7fe;
+    border: 1px solid #E0E5F2;
+    padding: 8px 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #2B3674;
+    transition: 0.3s;
+}
+
+.profile-btn:hover {
+    background: #e2e8f0;
+}
+
+.profile-icon {
+    width: 30px;
+    height: 30px;
+    background: #4318FF;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.profile-dropdown {
+    display: none;
+    /* Hidden by default */
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    z-index: 1000;
+    border: 1px solid #f0f0f0;
+}
+
+.profile-dropdown.show {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-header strong {
+    font-size: 1rem;
+    color: #1B2559;
+}
+
+.profile-header span {
+    font-size: 0.8rem;
+    color: #a3aed0;
+}
+
+hr {
+    margin: 10px 0;
+    border: 0;
+    border-top: 1px solid #f0f0f0;
+}
+
+.logout-link {
+    color: #ff4d4d;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+table {
+    border-collapse: collapse;
+    width: 80%;
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 15px 20px;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: 600;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #e0f2f1;
+    transition: 0.3s;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    .tab-btn {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

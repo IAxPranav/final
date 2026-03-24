@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management Dashboard</title>
+    <link rel="stylesheet" href="Enquirystyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic Vashi</div>
+        <div class="nav-right">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'enquiry')">Enquiry</button>
+                <button class="tab-btn" id="assignedTab">Assigned Students</button>
+                <button class="tab-btn" id="followupsTab">Follow-ups</button>
+            </div>
+
+            <div class="profile-container">
+                <button class="profile-btn" onclick="toggleProfileDropdown()">
+                    <div class="profile-icon" id="profile-icon">JS</div>
+                    Profile
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-header">
+                        <strong id="ProfileName">John Smith</strong>
+                        <span id="Department">Department: Admissions</span>
+                    </div>
+                    <hr>
+                    <a href="#" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="content">
+<section id="enquiry" class="tab-content active">
+    <div class="card">
+        <h3>New Student Enquiry</h3>
+        <form class="enquiry-form" id="enquiry-form">
+            <div class="form-grid">
+
+                <!-- First Name -->
+                <div class="input-group">
+                    <label>First Name*</label>
+                    <input type="text" placeholder="First Name" id="firstName" required>
+                </div>
+
+                <!-- Father Name -->
+                <div class="input-group">
+                    <label>Father Name*</label>
+                    <input type="text" placeholder="Father Name" id="fatherName" required>
+                </div>
+
+                <!-- Surname -->
+                <div class="input-group">
+                    <label>Surname*</label>
+                    <input type="text" placeholder="Surname" id="surname" required>
+                </div>
+
+                <!-- Branch -->
+                <div class="input-group">
+                    <label>Branch*</label>
+                    <select required id="branch">
+                        <option value="">Select Branch</option>
+                        <option>AN</option>
+                        <option>ME</option>
+                        <option>TE</option>
+                        <option>CE</option>
+                        <option>AE</option>
+                    </select>
+                </div>
+
+                <!-- Mobile -->
+                <div class="input-group">
+                    <label>Mobile Number*</label>
+                    <input type="tel" placeholder="10-digit number" id="phoneNO" required>
+                </div>
+
+                <!-- Percentage -->
+                <div class="input-group">
+                    <label>Percentage</label>
+                    <input type="number" step="0.01" id="percentage" placeholder="e.g. 85.5">
+                </div>
+
+                <!-- Management Checkbox -->
+                <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                    <label style="margin: 0; cursor: pointer;">Management admission?</label>
+                    <input type="checkbox" id="isManagement" style="width: 20px; height: 20px; cursor: pointer;">
+                </div>
+
+            </div>
+
+            <button type="submit" class="primary-btn" id="submitEnquiry">
+                Submit Enquiry
+            </button>
+        </form>
+    </div>
+</section>
+
+
+        <section id="assigned" class="tab-content">
+            <div class="card">
+                <h3>Assigned Students</h3>
+                <p class="placeholder-text">No students assigned yet.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sr No</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Phone Number</th>
+                            <th>Percent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enquiryTableBody">
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="followups" class="tab-content">
+            <div class="card">
+                <h3>Pending Follow-ups</h3>
+                <div class="student-followup-box" id="student-followup-box">
+
+            </div>
+        </section>
+    </main>
+
+    <script src="enquiry.js"></script>
+</body>
+
+</html>

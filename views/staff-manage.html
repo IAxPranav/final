@@ -5,13 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Management</title>
     <link rel="stylesheet" href="admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .staff-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .dept-select { width: 100%; padding: 8px; margin-top: 10px; border-radius: 6px; border: 1px solid #ddd; }
-        .status-toggle { margin-top: 15px; display: flex; align-items: center; gap: 10px; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
@@ -23,7 +17,7 @@
     <main class="content">
         <h1>Detailed Staff Management</h1>
         <div class="controls" style="margin-bottom: 20px;">
-            <input type="text" id="staff-search" placeholder="Search staff name..." style="padding: 10px; border-radius: 6px; border: 1px solid #ddd; width: 300px;">
+            <input type="text" id="staff-search" placeholder="Search staff name...">
         </div>
         <div id="staff-container" class="staff-grid"></div>
     </main>

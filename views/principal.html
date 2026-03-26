@@ -5,45 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Principal Dashboard - Master Statistics</title>
     <link rel="stylesheet" href="admin.css">
-    <style>
-        .controls { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap }
-        .table-actions button { margin-right:6px }
-        .delete-btn { background:#e74c3c; color:white; border:none; padding:6px 10px; border-radius:4px }
-        .update-btn { background:#007bff; color:white; border:none; padding:6px 10px; border-radius:4px }
-        .small { font-size:0.9em }
-        .summary-cards { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap }
-        .summary-card { background:white;padding:12px;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.06);min-width:180px }
-    </style>
 </head>
 <body>
-    <h1>Principal Dashboard</h1>
+    <main class="content">
+        <h1>Principal Dashboard</h1>
 
-    <div class="summary-cards" id="summary-cards"></div>
+        <div class="summary-cards" id="summary-cards"></div>
 
-    <div id="principal-charts" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px"></div>
+        <div id="principal-charts"></div>
 
-    <div class="controls">
-        <label>Search: <input id="principal-search" placeholder="Student name"></label>
-        <label>Department: <select id="principal-filter-dept"><option value="">All</option></select></label>
-        <button id="refresh-btn" class="start-btn">Refresh</button>
-    </div>
+        <div class="controls">
+            <label>Search: <input id="principal-search" placeholder="Student name"></label>
+            <label>Department: <select id="principal-filter-dept"><option value="">All</option></select></label>
+            <button id="refresh-btn" class="start-btn">Refresh</button>
+        </div>
 
-    <div style="overflow:auto;background:white;border-radius:8px;padding:8px">
-        <table class="followup-table" id="principal-table">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Phone</th>
-                    <th>Department</th>
-                    <th>Assigned To</th>
-                    <th>Latest Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="principal-table-body"></tbody>
-        </table>
-    </div>
+        <div class="card table-card">
+            <table class="followup-table" id="principal-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Phone</th>
+                        <th>Department</th>
+                        <th>Assigned To</th>
+                        <th>Latest Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="principal-table-body"></tbody>
+            </table>
+        </div>
+    </main>
 
     <div id="toast" style="position:fixed;right:20px;bottom:20px;padding:12px 18px;border-radius:6px;background:#27ae60;color:white;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.15)"></div>
 

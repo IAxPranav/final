@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Management Dashboard</title>
     <link rel="stylesheet" href="Enquirystyle.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -105,20 +105,22 @@
             <div class="card">
                 <h3>Assigned Students</h3>
                 <p class="placeholder-text">No students assigned yet.</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Sr No</th>
-                            <th>Name</th>
-                            <th>Department</th>
-                            <th>Phone Number</th>
-                            <th>Percent</th>
-                        </tr>
-                    </thead>
-                    <tbody id="enquiryTableBody">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sr No</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Phone Number</th>
+                                <th>Percent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enquiryTableBody">
 
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -126,7 +128,7 @@
             <div class="card">
                 <h3>Pending Follow-ups</h3>
                 <div class="student-followup-box" id="student-followup-box">
-
+                </div>
             </div>
         </section>
     </main>

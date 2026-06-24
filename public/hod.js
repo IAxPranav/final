@@ -218,50 +218,51 @@ function hasHodFollowup(enquiry) {
 function buildHodCard(enquiry, idxKey) {
     const safeName = enquiry.student_name.replace(/'/g, "\\'");
     const done = hasHodFollowup(enquiry);
+    const cardStyle = done ? 'border-left: 4px solid #1ca37e; background: #f0faf6;' : '';
     return `
-        <div class="student-followup-box">
+        <div class="student-followup-box" style="${cardStyle}">
             <div class="student-info">
                 <div>
                     <strong>${enquiry.student_name}</strong> | <span>${enquiry.phone_number}</span>
                     | <span style="color:var(--muted);font-size:0.85em;">${enquiry.department || ''}</span>
                     ${done ? '<span style="margin-left:8px;font-size:0.78rem;background:#1ca37e;color:#fff;border-radius:4px;padding:1px 7px;">Follow-up Done</span>' : ''}
                 </div>
-                <button class="action-btn" onclick="toggleHodFollowup('hod-followup-area-${idxKey}')">Take Follow-up</button>
+                <button class="action-btn" onclick="toggleHodFollowup('followup-area-${idxKey}')">Take Follow-up</button>
             </div>
-            <div id="hod-followup-area-${idxKey}" class="followup-area" style="display:none;">
+            <div id="followup-area-${idxKey}" class="followup-area" style="display:none;">
                 <div class="add-remark-container">
                     <label class="input-label">Select Student Status</label>
-                    <select id="hod-followupRemark-${idxKey}" class="remark-select">${HOD_FOLLOWUP_OPTIONS_HTML}</select>
-                    <input type="text" id="hod-otherRemark-${idxKey}" class="remark-select" placeholder="Enter remark for 'Other' status" style="display:none;">
-                    <select id="hod-BranchChange-${idxKey}" class="other-remark-input" style="display:none;">
+                    <select id="followupRemark-${idxKey}" class="remark-select">${HOD_FOLLOWUP_OPTIONS_HTML}</select>
+                    <input type="text" id="otherRemark-${idxKey}" class="remark-select" placeholder="Enter remark for 'Other' status" style="display:none;">
+                    <select id="BranchChange-${idxKey}" class="other-remark-input" style="display:none;">
                         <option value="" disabled selected>Select new branch</option>
                         <option value="AN">AN</option><option value="TE">TE</option>
                         <option value="ME">ME</option><option value="AE">AE</option><option value="CE">CE</option>
                     </select>
                     <div class="button-wrapper">
-                        <button class="primary-btn" onclick="addHodFollowup('hod-followupRemark-${idxKey}','hod-followupTableBody-${idxKey}',this,'${safeName}')">Add Follow-up</button>
+                        <button class="primary-btn" onclick="addHodFollowup('followupRemark-${idxKey}','followupTableBody-${idxKey}',this,'${safeName}')">Add Follow-up</button>
                         <span class="success-msg">Saved!</span>
                     </div>
                 </div>
                 <table class="followup-table">
                     <thead><tr><th style="width:50px;">No.</th><th>Date</th><th>Remark / Status</th></tr></thead>
-                    <tbody id="hod-followupTableBody-${idxKey}"></tbody>
+                    <tbody id="followupTableBody-${idxKey}"></tbody>
                 </table>
             </div>
         </div>`;
 }
 
 function wireHodCardEvents(idxKey) {
-    const sel = document.getElementById(`hod-followupRemark-${idxKey}`);
+    const sel = document.getElementById(`followupRemark-${idxKey}`);
     if (!sel) return;
     sel.addEventListener('change', function () {
-        document.getElementById(`hod-otherRemark-${idxKey}`).style.display = this.value === 'Other' ? 'block' : 'none';
-        document.getElementById(`hod-BranchChange-${idxKey}`).style.display = this.value === 'Branch Change' ? 'block' : 'none';
+        document.getElementById(`otherRemark-${idxKey}`).style.display = this.value === 'Other' ? 'block' : 'none';
+        document.getElementById(`BranchChange-${idxKey}`).style.display = this.value === 'Branch Change' ? 'block' : 'none';
     });
 }
 
 async function fetchHodAssignedEnquiries() {
-    const container = document.getElementById('hod-assigned-students-container');
+    const container = document.getElementById('assigned-followup-box');
     if (!container) return;
     container.innerHTML = '<p style="color:var(--muted);padding:8px 0;">Loading…</p>';
     try {
@@ -284,7 +285,7 @@ async function fetchHodAssignedEnquiries() {
             const key = 40000 + index;
             container.insertAdjacentHTML('beforeend', buildHodCard(enquiry, key));
             wireHodCardEvents(key);
-            setTimeout(() => loadHodTableData(enquiry.student_name, `hod-followupTableBody-${key}`), 0);
+            setTimeout(() => loadHodTableData(enquiry.student_name, `followupTableBody-${key}`), 0);
         });
     } catch (err) {
         console.error(err);
@@ -326,7 +327,7 @@ async function addHodFollowup(selectId, tableBodyId, btnElement, studentName) {
     let branchChange = '';
     const idx = selectId.split('-')[1];
     if (selectedRemark === 'Other') {
-        const otherInput = document.getElementById(`hod-otherRemark-${idx}`);
+        const otherInput = document.getElementById(`otherRemark-${idx}`);
         otherInput.style.display = 'block';
         const otherRemark = otherInput.value.trim();
         if (!otherRemark) { alert("Please enter a remark for 'Other' status."); return; }
@@ -336,7 +337,7 @@ async function addHodFollowup(selectId, tableBodyId, btnElement, studentName) {
     } else if (selectedRemark === 'Shift to Management') {
         if (!confirm(`Shift ${studentName} to Management (Snehalatha)?`)) return;
     } else if (selectedRemark === 'Branch Change') {
-        const branchSelect = document.getElementById(`hod-BranchChange-${idx}`);
+        const branchSelect = document.getElementById(`BranchChange-${idx}`);
         branchSelect.style.display = 'block';
         if (!branchSelect.value) { alert('Please select a new branch.'); return; }
         selectedRemark = `Branch Change to ${branchSelect.value}`;

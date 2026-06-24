@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Principal Dashboard — Agnel Polytechnic</title>
+    <link rel="stylesheet" href="admin.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic &mdash; Principal Dashboard</div>
+        <div class="nav-right">
+            <button class="start-btn" onclick="exportToExcel()">&#x2B07; Export to Excel</button>
+            <button id="refresh-btn" class="tab-btn">Refresh</button>
+            <a href="/logout" class="tab-btn" style="text-decoration:none;">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mob-nav-bar">
+        <button class="mob-nav-item active" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Dashboard</span>
+        </button>
+        <button class="mob-nav-item" id="principal-mob-refresh" onclick="loadAndRenderPrincipal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Refresh</span>
+        </button>
+        <button class="mob-nav-item" onclick="exportToExcel()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export</span>
+        </button>
+        <button class="mob-nav-item" onclick="document.getElementById('mob-principal-overlay').classList.add('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            <span>More</span>
+        </button>
+    </nav>
+    <div class="mob-overlay" id="mob-principal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+        <div class="mob-overlay-card">
+            <a href="/logout" class="mob-overlay-logout">Logout</a>
+        </div>
+    </div>
+
+    <main class="content">
+        <div class="summary-cards" id="summary-cards"></div>
+
+        <div id="principal-charts"></div>
+
+        <!-- Staff Progress -->
+        <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <h3 style="margin:0;">Staff Progress</h3>
+                    <button id="sp-toggle-btn" onclick="toggleStaffProgress()" title="Collapse/Expand" style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:1rem;line-height:1;">&#x25B2;</button>
+                </div>
+                <div id="sp-controls" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <label style="font-size:0.88rem;">Department:
+                        <select id="sp-filter-dept" onchange="renderStaffProgress()" style="margin-left:6px;">
+                            <option value="">All</option>
+                            <option value="AN">AN</option>
+                            <option value="TE">TE</option>
+                            <option value="CE">CE</option>
+                            <option value="ME">ME</option>
+                            <option value="AE">AE</option>
+                        </select>
+                    </label>
+                    <label style="font-size:0.88rem;">Sort by:
+                        <select id="sp-sort" onchange="renderStaffProgress()" style="margin-left:6px;">
+                            <option value="assigned-desc">Most Assigned</option>
+                            <option value="assigned-asc">Least Assigned</option>
+                            <option value="progress-desc">Best Progress</option>
+                            <option value="progress-asc">Least Progress</option>
+                            <option value="name">Name A–Z</option>
+                        </select>
+                    </label>
+                    <button class="start-btn" onclick="loadStaffProgress()">Refresh</button>
+                </div>
+            </div>
+            <div id="staff-progress-container"><p class="small" style="color:var(--muted);">Loading…</p></div>
+        </div>
+
+        <div class="card">
+            <div class="controls">
+                <label>Search: <input id="principal-search" placeholder="Student name"></label>
+                <label>Department: <select id="principal-filter-dept"><option value="">All</option></select></label>
+                <label>Staff: <select id="principal-filter-staff"><option value="">All</option></select></label>
+                <label>Follow-up: <select id="principal-filter-followup">
+                    <option value="">All</option>
+                    <option value="no-followup">No follow-up yet</option>
+                    <option value="has-followup">Has follow-up</option>
+                </select></label>
+                <label>Status Type: <select id="principal-filter-type">
+                    <option value="">All</option>
+                    <option value="Interested">Interested</option>
+                    <option value="Not Interested">Not Interested</option>
+                    <option value="Fill Admission/Option Form">Fill Admission/Option Form</option>
+                    <option value="Registration Done">Registration Done</option>
+                    <option value="Option 1/2/3 Filled">Option 1/2/3 Filled</option>
+                    <option value="Branch Change">Branch Change</option>
+                    <option value="Allotted">Allotted</option>
+                    <option value="Not Allotted">Not Allotted</option>
+                    <option value="Betterment">Betterment</option>
+                    <option value="Exit from System">Exit from System</option>
+                    <option value="Admission Taken">Admission Taken</option>
+                    <option value="Admission Not Taken">Admission Not Taken</option>
+                    <option value="Management">Management</option>
+                    <option value="Other">Other</option>
+                </select></label>
+                <label>FC Status: <select id="principal-filter-fc">
+                    <option value="">All</option>
+                    <option value="confirmed">FC Confirmed</option>
+                    <option value="not-confirmed">Not Confirmed</option>
+                </select></label>
+                <button id="principal-filter-reset" class="start-btn" style="align-self:flex-end;">Reset</button>
+            </div>
+        </div>
+
+        <div class="card table-card" style="overflow-x:auto;position:relative;">
+            <table class="followup-table" id="principal-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Phone</th>
+                        <th>Department</th>
+                        <th>Board</th>
+                        <th>Assigned To</th>
+                        <th>Latest Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="principal-table-body"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="toast" style="position:fixed;right:20px;bottom:20px;padding:12px 18px;border-radius:6px;background:#27ae60;color:white;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.15);z-index:2000;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="principal.js"></script>
+</body>
+</html>

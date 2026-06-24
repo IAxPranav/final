@@ -1,0 +1,362 @@
+/* ── FC Portal — fully responsive styles (extends Enquirystyle.css) ── */
+
+/* ── Search bar ── */
+.fc-search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.fc-search-input {
+    flex: 1;
+    min-width: 200px;
+    max-width: 420px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    background: #faf8f3;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fc-search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(11, 110, 107, 0.15);
+    background: #fff;
+}
+
+/* ── Modal ── */
+.fc-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeUp 0.2s ease;
+}
+
+.fc-modal {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 32px 60px rgba(15, 23, 42, 0.22);
+    width: 100%;
+    max-width: 640px;
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.fc-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+.fc-modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.fc-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    line-height: 1;
+}
+
+.fc-modal-close:hover {
+    background: #f3f6f5;
+}
+
+.fc-modal-body {
+    padding: 20px 24px;
+}
+
+.fc-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 22px;
+    border-top: 1px solid var(--line);
+    justify-content: flex-end;
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+}
+
+.fc-cancel-btn {
+    padding: 11px 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #f3f6f5;
+    color: var(--ink);
+    font-weight: 700;
+    font-family: var(--font-display);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fc-cancel-btn:hover {
+    background: #e6ecea;
+}
+
+/* ── Edit button in table ── */
+.fc-edit-btn {
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--primary), #1f7a8c);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.82rem;
+    font-family: var(--font-display);
+    transition: filter 0.2s;
+    white-space: nowrap;
+}
+
+.fc-edit-btn:hover {
+    filter: brightness(1.08);
+}
+
+/* ── Clickable table rows ── */
+.fc-student-row {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.fc-student-row:hover {
+    background-color: #e8f4f2 !important;
+}
+
+/* ── Modal section label ── */
+.fc-section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin: 0 0 10px;
+}
+
+/* ── Followup select grid ── */
+.fc-followup-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* ── Latest status cell ── */
+.fc-fu-cell {
+    font-size: 0.82rem;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--muted);
+}
+
+.fc-fu-cell.filled {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Tablet  ≤ 900px
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+    /* Allow table to scroll horizontally on tablet instead of breaking */
+    .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius-sm);
+    }
+
+    #fc-students-table {
+        min-width: 700px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Mobile  ≤ 640px
+   Table → card layout
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+    /* Search bar: stack vertically */
+    .fc-search-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .fc-search-input {
+        max-width: 100%;
+        min-width: unset;
+        width: 100%;
+    }
+
+    /* Table card flip */
+    #fc-students-table {
+        min-width: unset;
+        border: 0;
+        background: transparent;
+    }
+
+    #fc-students-table thead {
+        display: none;
+    }
+
+    #fc-students-table tbody tr {
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        margin-bottom: 14px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    #fc-students-table tbody tr:nth-child(even) {
+        background: #fff;
+    }
+
+    #fc-students-table tbody tr:hover {
+        background: #fff;
+    }
+
+    #fc-students-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border: none;
+        border-bottom: 1px solid rgba(31, 41, 55, 0.07);
+        font-size: 0.9rem;
+        text-align: right;
+    }
+
+    #fc-students-table tbody td:last-child {
+        border-bottom: none;
+    }
+
+    /* Label injected via data-label attribute */
+    #fc-students-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        flex-shrink: 0;
+        text-align: left;
+    }
+
+    /* Sr row acts as card header */
+    #fc-students-table tbody td[data-label="Sr"] {
+        background: var(--surface-2);
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 0.78rem;
+        padding: 8px 14px;
+    }
+
+    /* Edit button — full width on mobile */
+    #fc-students-table tbody td[data-label="Action"] {
+        justify-content: center;
+        padding: 12px 14px;
+    }
+
+    .fc-edit-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Status cell — allow wrapping */
+    .fc-fu-cell {
+        max-width: unset;
+        white-space: normal;
+        text-align: right;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Modal on small screens
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .fc-modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .fc-modal {
+        border-radius: var(--radius) var(--radius) 0 0;
+        max-height: 88vh;
+    }
+
+    .fc-modal-footer {
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+
+    .fc-modal-footer .primary-btn,
+    .fc-cancel-btn {
+        width: 100%;
+        text-align: center;
+        padding: 13px;
+    }
+
+    .fc-modal-body {
+        padding: 16px;
+    }
+
+    .fc-modal-header {
+        padding: 16px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Bottom nav + modal adjustment  ≤ 600px
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+    /* Lift the slide-up modal above the 64px bottom nav */
+    .fc-modal-overlay {
+        padding-bottom: 64px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — Very small  ≤ 420px
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 420px) {
+    .logo {
+        font-size: 1rem;
+    }
+
+    .card {
+        padding: 16px !important;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+    }
+}

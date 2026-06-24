@@ -1,0 +1,271 @@
+import express from "express";
+import mysql from "mysql2/promise";
+import session from "express-session";
+import path from "path";
+
+
+const app = express();
+const port = 3000;
+app.use(session({
+  secret: "secret-key",
+  resave: false,
+  saveUninitialized: false
+}));
+app.get("/enquiry", (req, res) => {
+  if (req.session.user) {
+    res.sendFile(path.resolve("views/Enquiry.html"));
+  } else {
+    res.redirect("/login.html");
+  }
+});
+
+app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const db = await mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Pranav@2008",
+  database: "data"
+});
+
+console.log("✅ Connected to MySQL database");
+
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const [rows] = await db.execute(
+      "SELECT staff_name, department FROM staff WHERE username = ? AND password = ?",
+      [username, password]
+    );
+
+    if (rows.length > 0) {
+
+      // 🔥 STORE SESSION HERE
+      req.session.user = {
+        name: rows[0].staff_name,   // ✅ correct column
+        department: rows[0].department
+      };
+
+
+      res.json({ success: true });
+
+    } else {
+      res.json({ success: false });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/profile", (req, res) => {
+  if (req.session.user) {
+    res.json(req.session.user);
+  } else {
+    res.status(401).json({ error: "Not logged in" });
+  }
+});
+let currentIndex = 0;
+app.get("/assignedEnquiries", async (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Session expired. Please login again." });
+    window.location.href = "/login.html";
+  }
+  try {
+    const [enquiries] = await db.execute(
+      "SELECT student_name, department, phone_number, percentage, CreatedBy FROM enquiry WHERE AssignedTo = ?",
+      [req.session.user.name]
+    );
+    res.json(enquiries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch enquiries" });
+  }
+});
+app.get("/followups", async (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Session expired. Please login again." });
+  }
+  try {
+    const [enquiries] = await db.execute(
+      "SELECT student_name, phone_number FROM enquiry WHERE AssignedTo = ?",
+      [req.session.user.name]
+    );
+    res.json(enquiries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch follow-ups" });
+  }
+});
+app.post("/EnquirySubmission", async (req, res) => {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: "Session expired. Please login again." });
+    window.location.href = "/login.html";
+  }
+  async function AutoAssignStaff() {
+  const { studentName, department, phoneNO, percentage } = req.body;
+  const [enquiryRows] = await db.execute(
+    "SELECT COUNT(*) as total FROM enquiry WHERE department = ?",
+    [department]
+  );
+  const totalEnquiries = enquiryRows[0].total;
+  const [staffRows] = await db.execute("SELECT staff_name FROM staff WHERE department = ?", [department]);
+  // console.log(staffRows)
+  const staffList = staffRows.map(row => row.staff_name);
+  console.log(staffList.length)
+  currentIndex = totalEnquiries % staffList.length;
+  const assignedStaff = staffList[currentIndex];
+  // console.log(staffList)
+  }
+
+  try {
+    await db.execute(
+      "INSERT INTO enquiry (student_name, department, phone_number, percentage, CreatedBy, AssignedTo) VALUES (?, ?, ?, ?, ?, ?)",
+      [AutoAssignStaff().studentName, AutoAssignStaff().department, AutoAssignStaff().phoneNO, AutoAssignStaff().percentage, req.session.user.name, AutoAssignStaff().assignedStaff]
+    );
+    res.json({ success: true, assignedTo: AutoAssignStaff().assignedStaff });
+    // req.session.save(() => {
+    //         res.json({ success: true, assignedTo: assignedStaff });
+    //     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to submit enquiry" });
+  }
+});
+
+app.get("/get-status-history", async (req, res) => {
+  const studentName = req.query.name;
+  // We need to select ALL followup columns
+  const query = `
+        SELECT followup1, followup2, followup3, followup4, followup5, followup6, followup7, created_at 
+        FROM enquiries_status 
+        WHERE student_name = ?`;
+
+  try {
+    const [results] = await db.execute(query, [studentName]);
+    res.json(results);
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
+// Get the current phase from the database
+app.get("/admin/get-current-phase", async (req, res) => {
+  try {
+    const [rows] = await db.execute("SELECT current_phase FROM app_settings WHERE id = 1");
+    if (rows.length > 0) {
+      // Update our local variable so the staff save-route stays in sync
+      activePhase = rows[0].current_phase;
+      res.json({ phase: activePhase });
+    } else {
+      res.json({ phase: 1 });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch phase" });
+  }
+});
+app.get("/admin/switch-phase/:num", async (req, res) => {
+  activePhase = parseInt(req.params.num);
+  try {
+    // SAVE TO DATABASE so it survives a reload
+    await db.execute("UPDATE app_settings SET current_phase = ? WHERE id = 1", [activePhase]);
+    res.send(`System is now writing to followup${activePhase}`);
+  } catch (err) {
+    res.status(500).send("Database error");
+  }
+});
+// --- TOP OF SERVER.JS ---
+let activePhase = 1; // Change this to 2, 3, etc. when you want to switch phases globally
+
+// --- UPDATED ROUTE ---
+app.post("/save-followup", async (req, res) => {
+  const { student_name, status, followup_date, branchChange, branchChangeBool  } = req.body;
+  console.log("Received data for saving:", req.body);
+  const targetColumn = `followup${activePhase}`;
+  if (branchChangeBool === true) {
+    try {
+      const existing = await db.execute(
+        "SELECT id FROM enquiries_status WHERE student_name = ?",
+        [student_name]);
+        const existingInMainEnquiry = await db.execute(
+          "SELECT student_name FROM enquiry WHERE student_name = ?",
+          [student_name]
+        );
+        if (existing[0].length > 0) {
+          await db.execute(
+            `UPDATE enquiries_status SET ${targetColumn} = ?, created_at = ?, assigned_to = ? WHERE student_name = ?`,
+            [status, followup_date, req.body.AssignedTo, student_name]
+          );
+        }
+        if (existingInMainEnquiry[0].length> 0) {
+          console.log("Updating main enquiry record for branch change");
+          await db.execute(
+            `UPDATE enquiry SET department = ? WHERE student_name = ?`,
+            [branchChange, student_name]
+          );
+        } else {
+          await db.execute(
+            console.log("Inserting new record for branch change"),
+          )}
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Database Error");
+    }
+  } else {
+      try {
+        const [existing] = await db.execute(
+          "SELECT id FROM enquiries_status WHERE student_name = ?",
+          [student_name]
+        );
+
+        if (existing.length > 0) {
+          // Update the column based on the activePhase
+          await db.execute(
+            `UPDATE enquiries_status SET ${targetColumn} = ?, created_at = ?, assigned_to = ? WHERE student_name = ?`,
+            [status, followup_date, req.body.AssignedTo, student_name]
+          );
+          return res.status(200).send(`Updated ${targetColumn}`);
+        } else {
+          // Insert new record into the current phase column
+          await db.execute(
+            `INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES (?, ?, ?, ?)`,
+            [student_name, status, followup_date, req.body.AssignedTo]
+          );
+          return res.status(200).send(`Inserted into ${targetColumn}`);
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).send("Database Error");
+      }
+  }
+});
+
+app.get("/view-all-status", async (req, res) => {
+  try {
+    const query = `
+            SELECT 
+                e.student_name, 
+                e.phone_number, 
+                e.department, 
+                e.AssignedTo,
+                s.followup1, s.followup2, s.followup3, 
+                s.followup4, s.followup5, s.followup6, s.followup7,
+                s.created_at 
+            FROM enquiry e
+            LEFT JOIN enquiries_status s ON e.student_name = s.student_name
+            ORDER BY e.student_name ASC
+        `;
+    const [results] = await db.execute(query);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch status table" });
+  }
+});
+app.listen(port, () => {
+  console.log(`🚀 Server running at http://localhost:${port}`);
+});

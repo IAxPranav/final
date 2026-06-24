@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Agnel Polytechnic</title>
+    <link rel="stylesheet" href="admin.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic &mdash; Admin Panel</div>
+        <div class="nav-right">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openAdminTab('dashboard', this)">Dashboard</button>
+                <button class="tab-btn" onclick="openAdminTab('staff', this)">Staff Management</button>
+            </div>
+            <a href="/logout" class="tab-btn" style="text-decoration:none;">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mob-nav-bar">
+        <button class="mob-nav-item active" id="mob-admin-dashboard" onclick="openAdminTab('dashboard',null);setAdminMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Dashboard</span>
+        </button>
+        <button class="mob-nav-item" id="mob-admin-staff" onclick="openAdminTab('staff',null);setAdminMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Staff</span>
+        </button>
+        <button class="mob-nav-item" onclick="document.getElementById('mob-admin-overlay').classList.add('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            <span>More</span>
+        </button>
+    </nav>
+    <div class="mob-overlay" id="mob-admin-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+        <div class="mob-overlay-card">
+            <a href="/logout" class="mob-overlay-logout">Logout</a>
+        </div>
+    </div>
+
+    <main class="content">
+
+        <!-- ── Tab: Dashboard ── -->
+        <section id="tab-dashboard" class="admin-tab">
+
+            <!-- Unavailability Requests -->
+            <div class="card" id="unavail-requests-card" style="border-left:4px solid #f59e0b;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                    <h3 style="margin:0;">
+                        Unavailability Requests
+                        <span id="unavail-badge" style="display:inline-block;background:#f59e0b;color:#fff;border-radius:999px;font-size:0.75rem;padding:2px 8px;margin-left:8px;vertical-align:middle;">0</span>
+                    </h3>
+                    <button class="tab-btn" onclick="loadUnavailRequests()">Refresh</button>
+                </div>
+                <div id="unavail-requests-container">
+                    <p class="small" style="color:var(--muted);">Loading…</p>
+                </div>
+            </div>
+
+            <!-- Invalid Number Alerts -->
+            <div class="card" id="invalid-numbers-card" style="border-left:4px solid #e53e3e;display:none;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                    <h3 style="margin:0;">
+                        &#128222; Invalid Numbers — Action Required
+                        <span id="invalid-numbers-badge" style="display:inline-block;background:#e53e3e;color:#fff;border-radius:999px;font-size:0.75rem;padding:2px 8px;margin-left:8px;vertical-align:middle;">0</span>
+                    </h3>
+                    <button class="tab-btn" onclick="loadInvalidNumbers()">Refresh</button>
+                </div>
+                <p style="font-size:0.83rem;color:#888;margin:0 0 10px;">These students were flagged with an invalid phone number by staff. Fix the number below — no reassignment will happen.</p>
+                <div id="invalid-numbers-container"></div>
+            </div>
+
+            <div id="charts"></div>
+
+            <div class="card">
+                <h3>Follow-up Phase Control</h3>
+                <div class="followup-container" id="followupManager"></div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                    <h3 style="margin:0;">All Students</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="start-btn" onclick="assignUnassigned()">&#x2714; Assign Unassigned</button>
+                        <button class="tab-btn" onclick="rebalanceAssignments()" style="border:1px solid #e5e7eb;">&#x2696; Rebalance All</button>
+                        <button class="tab-btn" onclick="downloadBackup()" style="border:1px solid #d97706;color:#d97706;" title="Download full DB backup as Excel">&#8595; Backup Excel</button>
+                    </div>
+                </div>
+                <div id="followup-filters">
+                    <label>Department:
+                        <select id="filter-dept"><option value="">All</option></select>
+                    </label>
+                    <label>Staff:
+                        <select id="filter-staff"><option value="">All</option></select>
+                    </label>
+                    <label>Status:
+                        <select id="filter-status">
+                            <option value="">All</option>
+                            <option value="no-followup">No follow-up yet</option>
+                            <option value="followup">Has followup</option>
+                        </select>
+                    </label>
+                    <label>FC Status:
+                        <select id="filter-fc">
+                            <option value="">All</option>
+                            <option value="confirmed">FC Confirmed</option>
+                            <option value="not-confirmed">Not Confirmed</option>
+                        </select>
+                    </label>
+                    <label>Search:
+                        <input id="filter-search" placeholder="Student name">
+                    </label>
+                    <button id="filter-reset" class="start-btn">Reset</button>
+                </div>
+                <div id="student-followup-box"></div>
+            </div>
+
+        </section>
+
+        <!-- ── Tab: Staff Management ── -->
+        <section id="tab-staff" class="admin-tab" style="display:none;">
+
+            <!-- Staff Progress -->
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <h3 style="margin:0;">Staff Progress</h3>
+                        <button id="sp-toggle-btn" onclick="toggleStaffProgress()" title="Collapse/Expand" style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:1rem;line-height:1;">&#x25B2;</button>
+                    </div>
+                    <div id="sp-controls" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <label style="font-size:0.88rem;">Department:
+                            <select id="sp-filter-dept" onchange="renderStaffProgress()" style="margin-left:6px;">
+                                <option value="">All</option>
+                                <option value="AN">AN</option>
+                                <option value="TE">TE</option>
+                                <option value="CE">CE</option>
+                                <option value="ME">ME</option>
+                                <option value="AE">AE</option>
+                                <option value="MANAGEMENT">MANAGEMENT</option>
+                            </select>
+                        </label>
+                        <label style="font-size:0.88rem;">Sort by:
+                            <select id="sp-sort" onchange="renderStaffProgress()" style="margin-left:6px;">
+                                <option value="assigned-desc">Most Assigned</option>
+                                <option value="assigned-asc">Least Assigned</option>
+                                <option value="progress-desc">Best Progress</option>
+                                <option value="progress-asc">Least Progress</option>
+                                <option value="name">Name A–Z</option>
+                            </select>
+                        </label>
+                        <button class="tab-btn" onclick="loadStaffProgress()">Refresh</button>
+                    </div>
+                </div>
+                <div id="staff-progress-container"><p class="small" style="color:var(--muted);">Loading…</p></div>
+            </div>
+
+            <!-- Create Staff -->
+            <div class="card">
+                <h3>Add New Staff</h3>
+                <form id="create-staff-form" class="staff-form-grid">
+                    <div class="input-group">
+                        <label>Full Name*</label>
+                        <input type="text" id="new-staff-name" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Username*</label>
+                        <input type="text" id="new-staff-username" placeholder="Login username" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password*</label>
+                        <input type="text" id="new-staff-password" placeholder="Login password" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Department*</label>
+                        <select id="new-staff-dept" required>
+                            <option value="">Select Department</option>
+                            <option value="AN">AN</option>
+                            <option value="TE">TE</option>
+                            <option value="CE">CE</option>
+                            <option value="ME">ME</option>
+                            <option value="AE">AE</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="align-self:flex-end;">
+                        <button type="submit" class="start-btn" id="create-staff-btn">Add Staff</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Staff List -->
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <h3 style="margin:0;">Staff Directory</h3>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <input type="text" id="staff-search-input" placeholder="Search by name or username…" style="width:220px;">
+                        <button class="start-btn" onclick="exportStaffExcel()">&#x2B07; Export Staff</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table class="followup-table" id="staff-dir-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Department</th>
+                                <th>Assignment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staff-dir-body">
+                            <tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted);">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Edit Staff Modal -->
+    <div id="edit-staff-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:440px;">
+            <span class="modal-close" onclick="closeEditStaffModal()">&times;</span>
+            <div class="modal-header">Edit Staff</div>
+            <input type="hidden" id="edit-staff-id">
+            <div class="staff-form-grid">
+                <div class="input-group">
+                    <label>Full Name*</label>
+                    <input type="text" id="edit-staff-name">
+                </div>
+                <div class="input-group">
+                    <label>Username*</label>
+                    <input type="text" id="edit-staff-username">
+                </div>
+                <div class="input-group">
+                    <label>Password*</label>
+                    <input type="text" id="edit-staff-pw">
+                </div>
+                <div class="input-group">
+                    <label>Department*</label>
+                    <select id="edit-staff-dept">
+                        <option value="AN">AN</option>
+                        <option value="TE">TE</option>
+                        <option value="CE">CE</option>
+                        <option value="ME">ME</option>
+                        <option value="AE">AE</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px;">
+                <button class="start-btn" onclick="saveEditStaff()">Save Changes</button>
+                <button class="delete-btn" onclick="closeEditStaffModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Detail Modal -->
+    <div id="detailModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDetailModal()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="toast" style="position:fixed;right:20px;bottom:20px;padding:12px 18px;border-radius:6px;background:#27ae60;color:white;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.15);z-index:2000;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

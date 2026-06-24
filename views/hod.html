@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOD Panel — Agnel Polytechnic</title>
+    <link rel="stylesheet" href="admin.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic &mdash; HOD Panel (<span id="hod-dept-label">…</span>)</div>
+        <div class="nav-right">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openHodTab('dashboard', this)">Dashboard</button>
+                <button class="tab-btn" onclick="openHodTab('assigned', this)">Assigned Students</button>
+                <button class="tab-btn" onclick="openHodTab('staff', this)">
+                    Staff Management
+                </button>
+                <button class="tab-btn" onclick="openHodTab('requests', this)">
+                    Requests <span id="hod-badge" style="background:#f59e0b;color:#fff;border-radius:999px;font-size:0.72rem;padding:1px 6px;margin-left:4px;"></span>
+                </button>
+            </div>
+            <button class="start-btn" onclick="exportHodExcel()">&#x2B07; Export Excel</button>
+            <a href="/logout" class="tab-btn" style="text-decoration:none;">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mob-nav-bar">
+        <button class="mob-nav-item active" id="mob-hod-dashboard" onclick="openHodTab('dashboard',null);setHodMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Dashboard</span>
+        </button>
+        <button class="mob-nav-item" id="mob-hod-assigned" onclick="openHodTab('assigned',null);setHodMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 0 1 2-2h2"/><path d="M8 10h8"/><path d="M8 14h5"/></svg>
+            <span>Assigned</span>
+        </button>
+        <button class="mob-nav-item" id="mob-hod-staff" onclick="openHodTab('staff',null);setHodMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Staff</span>
+        </button>
+        <button class="mob-nav-item" id="mob-hod-requests" onclick="openHodTab('requests',null);setHodMobActive(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            <span>Requests <span id="hod-mob-badge" style="font-size:0.6rem;"></span></span>
+        </button>
+        <button class="mob-nav-item" onclick="document.getElementById('mob-hod-overlay').classList.add('open')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            <span>More</span>
+        </button>
+    </nav>
+    <div class="mob-overlay" id="mob-hod-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+        <div class="mob-overlay-card">
+            <button onclick="exportHodExcel();document.getElementById('mob-hod-overlay').classList.remove('open')">Export Excel</button>
+            <a href="/logout" class="mob-overlay-logout">Logout</a>
+        </div>
+    </div>
+
+    <main class="content">
+
+        <!-- ── Tab: Dashboard ── -->
+        <section id="hod-tab-dashboard" class="admin-tab">
+
+            <div class="summary-cards" id="hod-summary-cards"></div>
+
+            <div class="card" style="border-left:4px solid #f59e0b;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                    <h3 style="margin:0;">Staff on Break <span id="hod-break-badge" style="display:inline-block;background:#f59e0b;color:#fff;border-radius:999px;font-size:0.75rem;padding:2px 8px;margin-left:8px;vertical-align:middle;">0</span></h3>
+                </div>
+                <div id="hod-on-break-container"><p class="small" style="color:var(--muted);">Loading…</p></div>
+            </div>
+
+            <div class="card">
+                <div class="controls" style="flex-wrap:wrap;gap:10px;">
+                    <label>Search: <input id="hod-search" placeholder="Student name"></label>
+                    <label>Follow-up:
+                        <select id="hod-filter-followup">
+                            <option value="">All</option>
+                            <option value="no-followup">No follow-up yet</option>
+                            <option value="has-followup">Has follow-up</option>
+                        </select>
+                    </label>
+                    <label>Staff:
+                        <select id="hod-filter-staff"><option value="">All</option></select>
+                    </label>
+                    <label>Status Type:
+                        <select id="hod-filter-type">
+                            <option value="">All</option>
+                            <option value="Interested">Interested</option>
+                            <option value="Not Interested">Not Interested</option>
+                            <option value="Registration Done">Registration Done</option>
+                            <option value="Allotted">Allotted</option>
+                            <option value="Not Allotted">Not Allotted</option>
+                            <option value="Admission Taken">Admission Taken</option>
+                            <option value="Admission Not Taken">Admission Not Taken</option>
+                            <option value="Branch Change">Branch Change</option>
+                            <option value="Exit from System">Exit from System</option>
+                            <option value="Management">Management</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </label>
+                    <button id="hod-reset-btn" class="start-btn">Reset</button>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <div class="table-wrap">
+                    <table class="followup-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Phone</th>
+                                <th>Board</th>
+                                <th>Assigned To</th>
+                                <th>Latest Status</th>
+                                <th>Reassign</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hod-students-body">
+                            <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ── Tab: Assigned Students ── -->
+        <section id="hod-tab-assigned" class="admin-tab" style="display:none;">
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+                    <h3 style="margin:0;">Students Assigned to You</h3>
+                    <p class="small" style="margin:0;color:var(--muted);">These are the students currently assigned to the logged-in HOD.</p>
+                </div>
+                <div id="hod-assigned-students-container"></div>
+            </div>
+        </section>
+
+        <!-- ── Tab: Staff Management ── -->
+        <section id="hod-tab-staff" class="admin-tab" style="display:none;">
+
+            <div class="card">
+                <h3>Add New Staff</h3>
+                <form id="hod-create-staff-form" class="staff-form-grid">
+                    <div class="input-group">
+                        <label>Full Name*</label>
+                        <input type="text" id="hod-new-name" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Username*</label>
+                        <input type="text" id="hod-new-username" placeholder="Login username" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password*</label>
+                        <input type="text" id="hod-new-password" placeholder="Login password" required>
+                    </div>
+                    <div class="input-group" style="align-self:flex-end;">
+                        <button type="submit" class="start-btn" id="hod-create-btn">Add Staff</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <h3 style="margin:0;">Staff in My Department</h3>
+                    <input type="text" id="hod-staff-search" placeholder="Search by name or username…" style="width:240px;">
+                </div>
+                <div class="table-wrap">
+                    <table class="followup-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Assignment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hod-staff-body">
+                            <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted);">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ── Tab: Requests ── -->
+        <section id="hod-tab-requests" class="admin-tab" style="display:none;">
+
+            <div class="card" id="hod-reassign-panel" style="display:none;border-left:4px solid #27ae60;margin-bottom:16px;">
+                <h3 id="hod-reassign-title" style="margin-bottom:12px;"></h3>
+                <div id="hod-reassign-container"></div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <h3 style="margin:0;">Unavailability Requests</h3>
+                    <button class="tab-btn" onclick="loadHodRequests()">Refresh</button>
+                </div>
+                <div id="hod-requests-container">
+                    <p class="small" style="color:var(--muted);">Loading…</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Edit staff modal -->
+    <div id="hod-edit-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:420px;">
+            <span class="modal-close" onclick="closeHodEditModal()">&times;</span>
+            <div class="modal-header">Edit Staff</div>
+            <input type="hidden" id="hod-edit-id">
+            <div class="staff-form-grid">
+                <div class="input-group">
+                    <label>Full Name*</label>
+                    <input type="text" id="hod-edit-name">
+                </div>
+                <div class="input-group">
+                    <label>Username*</label>
+                    <input type="text" id="hod-edit-username">
+                </div>
+                <div class="input-group">
+                    <label>Password*</label>
+                    <input type="text" id="hod-edit-pw">
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-top:20px;">
+                <button class="start-btn" onclick="saveHodEditStaff()">Save Changes</button>
+                <button class="delete-btn" onclick="closeHodEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" style="position:fixed;right:20px;bottom:20px;padding:12px 18px;border-radius:6px;background:#27ae60;color:white;display:none;box-shadow:0 4px 10px rgba(0,0,0,0.15);z-index:2000;"></div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="hod.js"></script>
+</body>
+</html>

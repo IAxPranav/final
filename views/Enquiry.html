@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff — Agnel Polytechnic</title>
+    <link rel="stylesheet" href="Enquirystyle.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic Vashi</div>
+        <div class="nav-right">
+            <div class="tabs">
+                <button class="tab-btn active" id="assignedTab">Assigned Students</button>
+                <button class="tab-btn" id="pendingTab">Pending</button>
+                <button class="tab-btn" id="followupsTab">Follow-ups</button>
+            </div>
+            <button class="tab-btn" onclick="exportStaffExcel()" title="Download your students as Excel" style="background:var(--primary);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem;white-space:nowrap;">
+                &#8595; Export Excel
+            </button>
+            <div class="profile-container">
+                <button class="profile-btn" onclick="toggleProfileDropdown()">
+                    <div class="profile-icon" id="profile-icon">JS</div>
+                    Profile
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-header">
+                        <strong id="ProfileName">John Smith</strong>
+                        <span id="Department">Department: Admissions</span>
+                    </div>
+                    <hr>
+                    <a href="/logout" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <button class="mob-nav-btn active" id="mob-tab-assigned" onclick="openTab(event,'assigned'); setMobActive(this); fetchAssignedEnquiries();">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Assigned</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-tab-pending" onclick="openTab(event,'pending'); setMobActive(this); fetchPendingStudents();">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Pending</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-tab-followups" onclick="openTab(event,'followups'); setMobActive(this); fetchFollowups();">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <span>Follow-ups</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-tab-profile" onclick="toggleMobProfile()">
+            <div class="mob-profile-icon" id="mob-profile-icon">JS</div>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- Mobile profile sheet -->
+    <div class="mob-profile-sheet" id="mobProfileSheet" onclick="closeMobProfile(event)">
+        <div class="mob-profile-card">
+            <div class="mob-profile-avatar" id="mob-avatar-initials">JS</div>
+            <strong id="mob-profile-name">John Smith</strong>
+            <span id="mob-profile-dept" style="font-size:0.85rem;color:var(--muted);margin-top:2px;"></span>
+            <button onclick="exportStaffExcel()" style="margin-top:12px;width:100%;padding:10px 0;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">&#8595; Export Excel</button>
+            <a href="/logout" class="mob-logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <main class="content">
+        <section id="assigned" class="tab-content active">
+            <div class="card">
+                <h3>Assigned Students</h3>
+                <div id="assigned-followup-box"></div>
+            </div>
+        </section>
+
+        <section id="pending" class="tab-content" style="display:none;">
+            <div class="card">
+                <h3>Pending Follow-ups</h3>
+                <div id="pending-followup-box"><p style="color:var(--muted);">Loading…</p></div>
+            </div>
+        </section>
+
+        <section id="followups" class="tab-content">
+            <div class="card">
+                <h3>Pending Follow-ups</h3>
+                <div class="student-followup-box" id="student-followup-box"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="enquiry.js"></script>
+</body>
+
+</html>

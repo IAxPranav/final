@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FC Dashboard — Agnel Polytechnic</title>
+    <link rel="stylesheet" href="Enquirystyle.css">
+    <link rel="stylesheet" href="fc.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">Agnel Polytechnic Vashi &mdash; FC Portal</div>
+        <div class="nav-right">
+            <div class="tabs">
+                <button class="tab-btn active" id="fc-desk-add-btn" onclick="showTab('add-enquiry')">Add Enquiry</button>
+                <button class="tab-btn" id="allStudentsTab" onclick="showTab('all-students')">All Students</button>
+            </div>
+            <div class="profile-container">
+                <button class="profile-btn" onclick="toggleProfileDropdown()">
+                    <div class="profile-icon" id="profile-icon">FC</div>
+                    Profile
+                </button>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <div class="profile-header">
+                        <strong id="ProfileName">FC Counselor</strong>
+                        <span id="Department">FC</span>
+                    </div>
+                    <hr>
+                    <a href="/logout" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="content">
+
+        <!-- ── Tab 1: Add Enquiry ── -->
+        <section id="add-enquiry" class="tab-content active">
+            <div class="card">
+                <h3>New Student Enquiry</h3>
+                <form class="enquiry-form" id="fc-enquiry-form">
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>First Name*</label>
+                            <input type="text" placeholder="First Name" id="fc-firstName" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Father Name*</label>
+                            <input type="text" placeholder="Father Name" id="fc-fatherName" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Surname*</label>
+                            <input type="text" placeholder="Surname" id="fc-surname" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Branch*</label>
+                            <select required id="fc-branch">
+                                <option value="">Select Branch</option>
+                                <option>AN</option>
+                                <option>ME</option>
+                                <option>TE</option>
+                                <option>CE</option>
+                                <option>AE</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Mobile Number*</label>
+                            <input type="tel" placeholder="10-digit number" id="fc-phoneNO" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Percentage</label>
+                            <input type="number" step="0.01" id="fc-percentage" placeholder="e.g. 85.5">
+                        </div>
+                        <div class="input-group">
+                            <label>Board*</label>
+                            <select id="fc-board" required>
+                                <option value="">Select Board</option>
+                                <option value="SSC">SSC (Maharashtra State Board)</option>
+                                <option value="ITI">ITI (Industrial Training Institute)</option>
+                                <option value="CBSE">CBSE</option>
+                                <option value="ICSE">ICSE / ISC</option>
+                                <option value="HSC">HSC (Maharashtra State Board)</option>
+                                <option value="NIOS">NIOS</option>
+                                <option value="IB">IB (International Baccalaureate)</option>
+                                <option value="Cambridge">Cambridge IGCSE</option>
+                                <option value="Other State Board">Other State Board</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Caste Category*</label>
+                            <select id="fc-caste" required>
+                                <option value="">Select Caste</option>
+                                <option value="General / Open">General / Open</option>
+                                <option value="OBC">OBC (Other Backward Class)</option>
+                                <option value="SC">SC (Scheduled Caste)</option>
+                                <option value="ST">ST (Scheduled Tribe)</option>
+                                <option value="NT-A / VJ">NT-A / VJ (Vimukta Jati)</option>
+                                <option value="NT-B">NT-B (Nomadic Tribes B)</option>
+                                <option value="NT-C">NT-C (Nomadic Tribes C)</option>
+                                <option value="NT-D">NT-D (Nomadic Tribes D)</option>
+                                <option value="SBC">SBC (Special Backward Class)</option>
+                                <option value="EWS">EWS (Economically Weaker Section)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Annual Family Income*</label>
+                            <select id="fc-annual-income" required>
+                                <option value="">Select Income Range</option>
+                                <option value="Below ₹8 Lakh">Below ₹8 Lakh</option>
+                                <option value="Above ₹8 Lakh">Above ₹8 Lakh</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                            <label style="margin: 0; cursor: pointer;">Management admission?</label>
+                            <input type="checkbox" id="fc-isManagement" style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
+                        <div class="input-group" style="flex-direction: row; align-items: center; gap: 10px;">
+                            <label style="margin: 0; cursor: pointer;">FC (Facility Center)?</label>
+                            <input type="checkbox" id="fc-is_fc" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
+                    </div>
+                    <button type="submit" class="primary-btn" id="fc-submitEnquiry">Submit Enquiry</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ── Tab 2: All Students ── -->
+        <section id="all-students" class="tab-content">
+            <div class="card">
+                <div class="fc-search-bar">
+                    <h3 style="margin:0;">All Students</h3>
+                    <input
+                        type="text"
+                        id="fc-search"
+                        class="fc-search-input"
+                        placeholder="Search by name, phone, branch, assigned to…"
+                        oninput="handleSearch(this.value)"
+                    >
+                </div>
+
+                <div class="table-wrap" style="margin-top:20px;">
+                    <table id="fc-students-table">
+                        <thead>
+                            <tr>
+                                <th>Sr</th>
+                                <th>Student Name</th>
+                                <th>Branch</th>
+                                <th>Phone</th>
+                                <th>%</th>
+                                <th>Board</th>
+                                <th>Assigned To</th>
+                                <th>Created By</th>
+                                <th>Created</th>
+                                <th>Latest Status</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-students-body">
+                            <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:28px;">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ── Edit Modal ── -->
+    <div id="fc-edit-modal" class="fc-modal-overlay" style="display:none;">
+        <div class="fc-modal">
+            <div class="fc-modal-header">
+                <h3>Edit Student</h3>
+                <button class="fc-modal-close" onclick="closeEditModal()">&#x2715;</button>
+            </div>
+            <div class="fc-modal-body">
+                <input type="hidden" id="edit-original-name">
+
+                <!-- Student details -->
+                <p class="fc-section-label">Student Details</p>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Student Name*</label>
+                        <input type="text" id="edit-name" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Branch*</label>
+                        <select id="edit-department">
+                            <option value="AN">AN</option>
+                            <option value="ME">ME</option>
+                            <option value="TE">TE</option>
+                            <option value="CE">CE</option>
+                            <option value="AE">AE</option>
+                            <option value="MANAGEMENT">MANAGEMENT</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Phone Number*</label>
+                        <input type="tel" id="edit-phone" maxlength="10">
+                    </div>
+                    <div class="input-group">
+                        <label>Percentage</label>
+                        <input type="number" step="0.01" id="edit-percentage">
+                    </div>
+                    <div class="input-group">
+                        <label>Assigned To</label>
+                        <input type="text" id="edit-assigned">
+                    </div>
+                    <div class="input-group">
+                        <label>Caste Category</label>
+                        <select id="edit-caste">
+                            <option value="">— Not set —</option>
+                            <option value="General / Open">General / Open</option>
+                            <option value="OBC">OBC (Other Backward Class)</option>
+                            <option value="SC">SC (Scheduled Caste)</option>
+                            <option value="ST">ST (Scheduled Tribe)</option>
+                            <option value="NT-A / VJ">NT-A / VJ (Vimukta Jati)</option>
+                            <option value="NT-B">NT-B (Nomadic Tribes B)</option>
+                            <option value="NT-C">NT-C (Nomadic Tribes C)</option>
+                            <option value="NT-D">NT-D (Nomadic Tribes D)</option>
+                            <option value="SBC">SBC (Special Backward Class)</option>
+                            <option value="EWS">EWS (Economically Weaker Section)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Annual Family Income</label>
+                        <select id="edit-annual-income">
+                            <option value="">— Not set —</option>
+                            <option value="Below ₹8 Lakh">Below ₹8 Lakh</option>
+                            <option value="Above ₹8 Lakh">Above ₹8 Lakh</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Board</label>
+                        <select id="edit-board">
+                            <option value="">— Not set —</option>
+                            <option value="SSC">SSC (Maharashtra State Board)</option>
+                            <option value="ITI">ITI (Industrial Training Institute)</option>
+                            <option value="CBSE">CBSE</option>
+                            <option value="ICSE">ICSE / ISC</option>
+                            <option value="HSC">HSC (Maharashtra State Board)</option>
+                            <option value="NIOS">NIOS</option>
+                            <option value="IB">IB (International Baccalaureate)</option>
+                            <option value="Cambridge">Cambridge IGCSE</option>
+                            <option value="Other State Board">Other State Board</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Latest follow-up only -->
+                <p class="fc-section-label" style="margin-top:22px;">Follow-up Status</p>
+                <input type="hidden" id="edit-fu-phase">
+
+                <div id="fc-latest-fu-wrap" class="input-group">
+                    <label id="fc-latest-fu-label">Latest Follow-up</label>
+                    <select id="edit-fu-latest"><option value="">— Not set —</option></select>
+                </div>
+
+                <p id="fc-no-fu-msg" style="display:none; color:var(--muted); font-size:0.88rem; margin:4px 0 0;">
+                    No follow-up recorded yet for this student.
+                </p>
+            </div>
+            <div class="fc-modal-footer" style="flex-wrap:wrap;gap:10px;">
+                <button class="primary-btn" id="fc-save-btn" onclick="saveStudent()">Save Changes</button>
+                <button class="primary-btn" id="fc-confirm-btn" onclick="confirmAdmission()"
+                    style="background:#d97706;border-color:#d97706;">
+                    &#x2713; Confirm Admission
+                </button>
+                <button class="fc-cancel-btn" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="mobile-bottom-nav">
+        <button class="mob-nav-btn active" id="mob-fc-btn-add" onclick="showTab('add-enquiry')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <span>Add Enquiry</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-fc-btn-students" onclick="showTab('all-students')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>All Students</span>
+        </button>
+        <button class="mob-nav-btn" id="mob-fc-btn-profile" onclick="toggleMobFcProfile()">
+            <div class="mob-profile-icon" id="mob-fc-profile-icon">FC</div>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- Mobile profile bottom sheet -->
+    <div class="mob-profile-sheet" id="mob-fc-profile-sheet" onclick="closeMobFcProfile(event)">
+        <div class="mob-profile-card">
+            <div class="mob-profile-avatar" id="mob-fc-avatar">FC</div>
+            <strong id="mob-fc-name">FC Counselor</strong>
+            <span style="font-size:0.85rem;color:var(--muted);margin-top:2px;">FC Department</span>
+            <a href="/logout" class="mob-logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <script src="fc.js"></script>
+</body>
+
+</html>

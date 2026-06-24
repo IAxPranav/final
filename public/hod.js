@@ -218,9 +218,8 @@ function hasHodFollowup(enquiry) {
 function buildHodCard(enquiry, idxKey) {
     const safeName = enquiry.student_name.replace(/'/g, "\\'");
     const done = hasHodFollowup(enquiry);
-    const cardStyle = done ? 'border-left: 4px solid #1ca37e; background: #f0faf6;' : '';
     return `
-        <div class="student-followup-box" style="${cardStyle}">
+        <div class="student-followup-box">
             <div class="student-info">
                 <div>
                     <strong>${enquiry.student_name}</strong> | <span>${enquiry.phone_number}</span>

@@ -78,9 +78,19 @@ function renderFollowups() {
     }).join('');
 }
 
-function finalizeFollowup(id) {
+async function finalizeFollowup(id) {
     const fu = followups.find(f => f.id === id);
-    if (fu && fu.status === 'active') { fu.status = 'completed'; renderFollowups(); }
+    if (!fu || fu.status !== 'active') return;
+    try {
+        const response = await fetch('/admin/finalize-followup', { method: 'POST' });
+        if (!response.ok) throw new Error('Failed');
+        fu.status = 'completed';
+        await syncPhaseWithDatabase();
+        showToast(`Followup ${id} finalized`);
+    } catch (err) {
+        console.error(err);
+        showToast('Failed to finalize follow-up', false);
+    }
 }
 
 async function startFollowup(id) {
@@ -88,7 +98,10 @@ async function startFollowup(id) {
     const prevCompleted = id === 1 || followups[id - 2].status === 'completed';
     if (fu && fu.status === 'pending' && prevCompleted) {
         const response = await fetch(`/admin/switch-phase/${id}`);
-        if (response.ok) { fu.status = 'active'; renderFollowups(); }
+        if (response.ok) {
+            await syncPhaseWithDatabase();
+            showToast(`Followup ${id} started`);
+        }
         else alert("Failed to switch phase on the server.");
     }
 }

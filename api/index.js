@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import path from "path";
 import dotenv from "dotenv";
+import { getNextPhaseId, normalizePhase } from "../lib/followupPhase.js";
 
 dotenv.config();
 
@@ -457,41 +458,81 @@ app.get("/get-status-history", async (req, res) => {
     WHERE student_name = $1`;
   try {
     const { rows } = await db.query(query, [studentName]);
-    res.json(rows);
+    const normalizedRows = rows.map((row) => {
+      const history = [];
+      for (let i = 1; i <= 7; i++) {
+        const val = row[`followup${i}`];
+        if (val && String(val).trim() !== "" && String(val).trim() !== "null") {
+          history.push({ phase: i, value: val, created_at: row.created_at });
+        }
+      }
+      return { ...row, history };
+    });
+    res.json(normalizedRows);
   } catch (err) {
     console.error("Database error:", err);
     res.status(500).json({ error: "Database error" });
   }
 });
 
-app.get("/admin/get-current-phase", async (req, res) => {
+let activePhase = 1;
+
+async function syncActivePhaseFromDb() {
   try {
     const { rows } = await db.query("SELECT current_phase FROM app_settings WHERE id = 1");
     if (rows.length > 0) {
-      activePhase = rows[0].current_phase;
-      res.json({ phase: activePhase });
+      activePhase = normalizePhase(rows[0].current_phase);
     } else {
-      res.json({ phase: 1 });
+      activePhase = 1;
     }
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch phase" });
+    console.error("Phase sync error:", err.message);
   }
+}
+
+async function persistActivePhase(nextPhase = activePhase) {
+  try {
+    const phase = normalizePhase(nextPhase);
+    await db.query("INSERT INTO app_settings (id, current_phase) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET current_phase = EXCLUDED.current_phase", [phase]);
+    activePhase = phase;
+  } catch (err) {
+    console.error("Phase persist error:", err.message);
+  }
+}
+
+app.get("/admin/get-current-phase", async (req, res) => {
+  await syncActivePhaseFromDb();
+  res.json({ phase: activePhase });
 });
 
 app.get("/admin/switch-phase/:num", async (req, res) => {
-  activePhase = parseInt(req.params.num);
+  const requestedPhase = normalizePhase(req.params.num);
+  activePhase = requestedPhase;
   try {
-    await db.query("UPDATE app_settings SET current_phase = $1 WHERE id = 1", [activePhase]);
+    await persistActivePhase(activePhase);
     res.send(`System is now writing to followup${activePhase}`);
   } catch (err) {
     res.status(500).send("Database error");
   }
 });
 
-let activePhase = 1;
+app.post("/admin/finalize-followup", async (req, res) => {
+  const user = getUser(req);
+  if (!user || user.role !== "admin") return res.status(401).json({ error: "Unauthorized" });
+  try {
+    await syncActivePhaseFromDb();
+    const nextPhase = getNextPhaseId(activePhase);
+    await persistActivePhase(nextPhase);
+    res.json({ success: true, phase: activePhase });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to finalize follow-up" });
+  }
+});
 
 app.post("/save-followup", async (req, res) => {
   const { student_name, status, followup_date, branchChange, branchChangeBool, exitFromSystembool } = req.body;
+  await syncActivePhaseFromDb();
   const targetColumn = `followup${activePhase}`;
 
   if (branchChangeBool === true) {

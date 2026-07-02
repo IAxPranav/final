@@ -302,17 +302,13 @@ async function loadHodTableData(studentName, tableBodyId) {
         tableBody.innerHTML = '';
         if (data.length > 0) {
             const row = data[0];
-            const dateStr = row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB') : 'N/A';
-            let counter = 1;
-            for (let i = 1; i <= 7; i++) {
-                const val = row[`followup${i}`];
-                if (val && val.trim() !== '' && val !== 'null') {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${counter}</td><td>${dateStr}</td><td><strong>[F${i}]</strong> ${val}</td>`;
-                    tableBody.appendChild(tr);
-                    counter++;
-                }
-            }
+            const history = row.history || [];
+            history.forEach((entry, index) => {
+                const dateStr = entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-GB') : 'N/A';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index + 1}</td><td>${dateStr}</td><td><strong>[F${entry.phase}]</strong> ${entry.value}</td>`;
+                tableBody.appendChild(tr);
+            });
         }
     } catch (err) {
         console.error(err);

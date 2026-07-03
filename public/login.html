@@ -10,55 +10,34 @@
 </head>
 
 <body class="login-page">
-    <div class="login-layout">
-        <div class="login-hero" aria-hidden="true">
-            <div class="login-hero-overlay"></div>
-            <div class="login-hero-brand">
-                <div class="hero-logo-mark">
-                    <img src="login-logo.png" alt="Agnel Polytechnic logo">
-                </div>
-                <div class="hero-logo-copy">
-                    <strong>Agnel Polytechnic</strong>
-                    <span>Vashi, Navi Mumbai</span>
-                </div>
+    <div class="login-card">
+        <div class="login-card-inner">
+            <div class="login-card-head">
+                <span>Sign In</span>
+                <h2>Staff Portal</h2>
+                <p>Access your dashboard and manage student follow-ups securely.</p>
             </div>
-            <div class="login-hero-content">
-                <h1>Welcome to the Admission Tracker</h1>
-                <p>Sign in to manage enquiries, follow-ups, staff assignments and live department metrics.</p>
-            </div>
-        </div>
 
-        <div class="login-panel">
-            <div class="login-panel-card">
-                <div class="login-panel-head">
-                    <div>
-                        <span>Sign In</span>
-                        <h2>Staff Portal</h2>
-                    </div>
-                    <div class="login-panel-subtitle">Access your dashboard and manage students safely.</div>
+            <form class="login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
                 </div>
 
-                <form class="login-form">
-                    <div class="input-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" placeholder="Enter your username" required>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" placeholder="********" required>
+                        <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
                     </div>
+                </div>
 
-                    <div class="input-group">
-                        <label for="password">Password</label>
-                        <div class="password-wrapper">
-                            <input type="password" id="password" placeholder="********" required>
-                            <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
-                        </div>
-                    </div>
+                <button type="submit" id="login-btn" class="login-btn">Sign In</button>
 
-                    <button type="submit" id="login-btn" class="login-btn">Sign In</button>
-
-                    <div class="form-footer">
-                        <a href="#">Forgot password?</a>
-                    </div>
-                </form>
-            </div>
+                <div class="form-footer">
+                    <a href="#">Forgot password?</a>
+                </div>
+            </form>
         </div>
     </div>
     <script src="script.js"></script>

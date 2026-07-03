@@ -548,8 +548,8 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, created_at = $2, assigned_to = $3 WHERE student_name = $4`,
-          [status, followup_date, newAssignedStaff, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
+          [status, newAssignedStaff, student_name]
         );
       }
       triggerBackup();
@@ -600,9 +600,9 @@ app.post("/save-followup", async (req, res) => {
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [hodName, student_name]);
       const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, created_at = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date, hodName, student_name]);
+        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`, [status, hodName, student_name]);
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date, hodName]);
+        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date || new Date().toISOString(), hodName]);
       }
       triggerBackup();
       return res.status(200).send("Assigned to HOD");
@@ -620,9 +620,9 @@ app.post("/save-followup", async (req, res) => {
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [mgmtName, student_name]);
       const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, created_at = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date, mgmtName, student_name]);
+        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`, [status, mgmtName, student_name]);
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date, mgmtName]);
+        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date || new Date().toISOString(), mgmtName]);
       }
       triggerBackup();
       return res.status(200).send("Shifted to Management");
@@ -643,13 +643,13 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, created_at = $2, assigned_to = $3 WHERE student_name = $4`,
-          [status, followup_date, newAssignedStaff, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
+          [status, newAssignedStaff, student_name]
         );
       } else {
         await db.query(
           `INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`,
-          [student_name, status, followup_date, newAssignedStaff]
+          [student_name, status, followup_date || new Date().toISOString(), newAssignedStaff]
         );
       }
       triggerBackup();
@@ -666,15 +666,15 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, created_at = $2, assigned_to = $3 WHERE student_name = $4`,
-          [status, followup_date, req.body.AssignedTo, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
+          [status, req.body.AssignedTo, student_name]
         );
         triggerBackup();
         return res.status(200).send(`Updated ${targetColumn}`);
       } else {
         await db.query(
           `INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`,
-          [student_name, status, followup_date, req.body.AssignedTo]
+          [student_name, status, followup_date || new Date().toISOString(), req.body.AssignedTo]
         );
         triggerBackup();
         return res.status(200).send(`Inserted into ${targetColumn}`);

@@ -9,31 +9,55 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <div class="login-container">
-        <form class="login-form">
-            <h2>Welcome Back</h2>
-            <p>Please enter your details to sign in.</p>
-
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required>
-            </div>
-
-            <div class="input-group">
-                <label for="password">Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" placeholder="********" required>
-                    <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
+<body class="login-page">
+    <div class="login-layout">
+        <div class="login-hero" aria-hidden="true">
+            <div class="login-hero-overlay"></div>
+            <div class="login-hero-brand">
+                <div class="hero-logo-mark">AP</div>
+                <div class="hero-logo-copy">
+                    <strong>Agnel Polytechnic</strong>
+                    <span>Vashi, Navi Mumbai</span>
                 </div>
             </div>
-
-            <button type="submit" id="login-btn" class="login-btn">Sign In</button>
-
-            <div class="form-footer">
-                <a href="#">Forgot password?</a>
+            <div class="login-hero-content">
+                <h1>Welcome to the Admission Tracker</h1>
+                <p>Sign in to manage enquiries, follow-ups, staff assignments and live department metrics.</p>
             </div>
-        </form>
+        </div>
+
+        <div class="login-panel">
+            <div class="login-panel-card">
+                <div class="login-panel-head">
+                    <div>
+                        <span>Sign In</span>
+                        <h2>Staff Portal</h2>
+                    </div>
+                    <div class="login-panel-subtitle">Access your dashboard and manage students safely.</div>
+                </div>
+
+                <form class="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" placeholder="********" required>
+                            <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="login-btn" class="login-btn">Sign In</button>
+
+                    <div class="form-footer">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

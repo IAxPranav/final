@@ -28,7 +28,8 @@ body {
     min-height: 100vh;
     font-family: var(--font-body);
     color: var(--ink);
-    background: url('https://images.unsplash.com/photo-1579426636072-2820fba2103f?auto=format&fit=crop&w=1600&q=80') no-repeat center/cover;
+    background: url('login-bg.png') no-repeat center/cover;
+    background-color: rgba(11, 110, 107, 0.24);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -30,6 +30,14 @@ console.log("✅ Connected to Postgres database");
 db.query(`ALTER TABLE staff ADD COLUMN IF NOT EXISTS designation TEXT`).catch(() => {});
 db.query(`ALTER TABLE enquiry ADD COLUMN IF NOT EXISTS fc_confirmed BOOLEAN DEFAULT FALSE`).catch(() => {});
 db.query(`ALTER TABLE enquiry ADD COLUMN IF NOT EXISTS is_direct_second_year BOOLEAN DEFAULT FALSE`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup1_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup2_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup3_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup4_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup5_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup6_date TIMESTAMPTZ`).catch(() => {});
+db.query(`ALTER TABLE enquiries_status ADD COLUMN IF NOT EXISTS followup7_date TIMESTAMPTZ`).catch(() => {});
+
 
 db.query(`
   CREATE TABLE IF NOT EXISTS data_backups (
@@ -92,7 +100,7 @@ async function triggerBackup() {
         COALESCE(e.fc_confirmed, FALSE) AS fc_confirmed,
         s.followup1, s.followup2, s.followup3,
         s.followup4, s.followup5, s.followup6, s.followup7,
-        s.created_at AS last_followup_date
+        COALESCE(GREATEST(s.followup1_date, s.followup2_date, s.followup3_date, s.followup4_date, s.followup5_date, s.followup6_date, s.followup7_date), s.created_at) AS last_followup_date
       FROM enquiry e
       LEFT JOIN enquiries_status s ON e.student_name = s.student_name
       ORDER BY e.student_name ASC, s.created_at DESC NULLS LAST
@@ -453,7 +461,9 @@ app.post("/EnquirySubmission", async (req, res) => {
 app.get("/get-status-history", async (req, res) => {
   const studentName = req.query.name;
   const query = `
-    SELECT followup1, followup2, followup3, followup4, followup5, followup6, followup7, created_at 
+    SELECT followup1, followup2, followup3, followup4, followup5, followup6, followup7, 
+           followup1_date, followup2_date, followup3_date, followup4_date, followup5_date, followup6_date, followup7_date,
+           created_at 
     FROM enquiries_status 
     WHERE student_name = $1`;
   try {
@@ -463,7 +473,7 @@ app.get("/get-status-history", async (req, res) => {
       for (let i = 1; i <= 7; i++) {
         const val = row[`followup${i}`];
         if (val && String(val).trim() !== "" && String(val).trim() !== "null") {
-          history.push({ phase: i, value: val, created_at: row.created_at });
+          history.push({ phase: i, value: val, created_at: row[`followup${i}_date`] || row.created_at });
         }
       }
       return { ...row, history };
@@ -534,6 +544,7 @@ app.post("/save-followup", async (req, res) => {
   const { student_name, status, followup_date, branchChange, branchChangeBool, exitFromSystembool } = req.body;
   await syncActivePhaseFromDb();
   const targetColumn = `followup${activePhase}`;
+  const targetDateColumn = `followup${activePhase}_date`;
 
   if (branchChangeBool === true) {
     try {
@@ -548,8 +559,8 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
-          [status, newAssignedStaff, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), newAssignedStaff, student_name]
         );
       }
       triggerBackup();
@@ -600,9 +611,9 @@ app.post("/save-followup", async (req, res) => {
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [hodName, student_name]);
       const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`, [status, hodName, student_name]);
+        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date || new Date().toISOString(), hodName, student_name]);
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date || new Date().toISOString(), hodName]);
+        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`, [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), hodName]);
       }
       triggerBackup();
       return res.status(200).send("Assigned to HOD");
@@ -620,9 +631,9 @@ app.post("/save-followup", async (req, res) => {
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [mgmtName, student_name]);
       const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`, [status, mgmtName, student_name]);
+        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date || new Date().toISOString(), mgmtName, student_name]);
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`, [student_name, status, followup_date || new Date().toISOString(), mgmtName]);
+        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`, [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), mgmtName]);
       }
       triggerBackup();
       return res.status(200).send("Shifted to Management");
@@ -643,13 +654,13 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
-          [status, newAssignedStaff, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), newAssignedStaff, student_name]
         );
       } else {
         await db.query(
-          `INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`,
-          [student_name, status, followup_date || new Date().toISOString(), newAssignedStaff]
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), newAssignedStaff]
         );
       }
       triggerBackup();
@@ -666,15 +677,15 @@ app.post("/save-followup", async (req, res) => {
       );
       if (existingRows.length > 0) {
         await db.query(
-          `UPDATE enquiries_status SET ${targetColumn} = $1, assigned_to = $2 WHERE student_name = $3`,
-          [status, req.body.AssignedTo, student_name]
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), req.body.AssignedTo, student_name]
         );
         triggerBackup();
         return res.status(200).send(`Updated ${targetColumn}`);
       } else {
         await db.query(
-          `INSERT INTO enquiries_status (student_name, ${targetColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4)`,
-          [student_name, status, followup_date || new Date().toISOString(), req.body.AssignedTo]
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), req.body.AssignedTo]
         );
         triggerBackup();
         return res.status(200).send(`Inserted into ${targetColumn}`);
@@ -697,7 +708,7 @@ app.get("/view-all-status", async (req, res) => {
         COALESCE(e.fc_confirmed, FALSE) AS fc_confirmed,
         s.followup1, s.followup2, s.followup3,
         s.followup4, s.followup5, s.followup6, s.followup7,
-        s.created_at
+        COALESCE(GREATEST(s.followup1_date, s.followup2_date, s.followup3_date, s.followup4_date, s.followup5_date, s.followup6_date, s.followup7_date), s.created_at) AS created_at
       FROM enquiry e
       LEFT JOIN enquiries_status s ON e.student_name = s.student_name
       ORDER BY e.student_name ASC, s.created_at DESC NULLS LAST
@@ -1535,16 +1546,35 @@ app.post("/admin/update-followups", async (req, res) => {
   if (!student_name) return res.status(400).json({ error: "student_name required" });
   const vals = [followup1, followup2, followup3, followup4, followup5, followup6, followup7].map(v => v || null);
   try {
-    const { rows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
-    if (rows.length > 0) {
+    const { rows: existingRows } = await db.query("SELECT * FROM enquiries_status WHERE student_name = $1", [student_name]);
+    if (existingRows.length > 0) {
+      const existing = existingRows[0];
+      const dateVals = [];
+      for (let i = 1; i <= 7; i++) {
+        const newVal = vals[i - 1];
+        const oldVal = existing[`followup${i}`];
+        if (newVal !== oldVal) {
+          dateVals.push(newVal ? new Date().toISOString() : null);
+        } else {
+          dateVals.push(existing[`followup${i}_date`]);
+        }
+      }
       await db.query(
-        `UPDATE enquiries_status SET followup1=$1, followup2=$2, followup3=$3, followup4=$4, followup5=$5, followup6=$6, followup7=$7 WHERE student_name=$8`,
-        [...vals, student_name]
+        `UPDATE enquiries_status SET 
+           followup1=$1, followup2=$2, followup3=$3, followup4=$4, followup5=$5, followup6=$6, followup7=$7,
+           followup1_date=$8, followup2_date=$9, followup3_date=$10, followup4_date=$11, followup5_date=$12, followup6_date=$13, followup7_date=$14
+         WHERE student_name=$15`,
+        [...vals, ...dateVals, student_name]
       );
     } else {
+      const dateVals = vals.map(v => v ? new Date().toISOString() : null);
       await db.query(
-        `INSERT INTO enquiries_status (student_name, followup1, followup2, followup3, followup4, followup5, followup6, followup7) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [student_name, ...vals]
+        `INSERT INTO enquiries_status (
+           student_name, 
+           followup1, followup2, followup3, followup4, followup5, followup6, followup7,
+           followup1_date, followup2_date, followup3_date, followup4_date, followup5_date, followup6_date, followup7_date
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+        [student_name, ...vals, ...dateVals]
       );
     }
 
@@ -1593,7 +1623,7 @@ app.get("/staff/export-data", async (req, res) => {
         e.created_at AS enquiry_created_at,
         s.followup1, s.followup2, s.followup3,
         s.followup4, s.followup5, s.followup6, s.followup7,
-        s.created_at AS last_followup_date
+        COALESCE(GREATEST(s.followup1_date, s.followup2_date, s.followup3_date, s.followup4_date, s.followup5_date, s.followup6_date, s.followup7_date), s.created_at) AS last_followup_date
       FROM enquiry e
       LEFT JOIN enquiries_status s ON e.student_name = s.student_name
       WHERE LOWER(e."AssignedTo") = LOWER($1)

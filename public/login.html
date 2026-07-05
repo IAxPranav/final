@@ -10,36 +10,67 @@
 </head>
 
 <body class="login-page">
-    <div class="login-card">
-        <div class="login-card-inner">
-            <div class="login-card-head">
-                <span>Sign In</span>
-                <h2>Staff Portal</h2>
-                <p>Access your dashboard and manage student follow-ups securely.</p>
+    <!-- Navbar -->
+    <nav class="login-navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <img src="agnel-logo.png" alt="Agnel Polytechnic Logo" class="navbar-logo">
+                <span class="navbar-text">Agnel Polytechnic Vashi</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-card-inner">
+                <div class="login-card-head">
+                    <span>Sign In</span>
+                    <h2>Staff Portal</h2>
+                    <p>Access your dashboard and manage student follow-ups securely.</p>
+                </div>
+
+                <form class="login-form">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" placeholder="********" required>
+                            <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="login-btn" class="login-btn">Sign In</button>
+
+                    <div class="form-footer">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="login-footer">
+            <div class="footer-credits">
+                <h3>Designed and Developed by:</h3>
+                <p>Prof. Pranavkumar Bhadane, AN Department</p>
+                <p>Pranav Ingulakar, AN Student</p>
+                <p>Agnel Polytechnic Vashi</p>
             </div>
 
-            <form class="login-form">
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter your username" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" placeholder="********" required>
-                        <span class="toggle-password" onclick="togglePasswordVisibility()">Show</span>
-                    </div>
-                </div>
-
-                <button type="submit" id="login-btn" class="login-btn">Sign In</button>
-
-                <div class="form-footer">
-                    <a href="#">Forgot password?</a>
-                </div>
-            </form>
-        </div>
+            <div class="footer-contact">
+                <h3>For Queries Contact:</h3>
+                <p><strong>Prof. Pranavkumar Bhadane</strong></p>
+                <p>Mobile: <a href="tel:+917821096591">7821096591</a></p>
+                <p>Email: <a href="mailto:Pranav0423an@gmail.com">Pranav0423an@gmail.com</a></p>
+            </div>
+        </footer>
     </div>
+
     <script src="script.js"></script>
 </body>
 

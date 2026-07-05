@@ -270,7 +270,7 @@ async function processSaveFollowup(req, res, phase) {
         return res.status(200).send(`Updated ${targetColumn}`);
       } else {
         await db.query(
-          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
           [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), AssignedTo || 'null']
         );
         triggerBackup();

@@ -120,6 +120,7 @@ async function triggerBackup() {
 
 // Helper to process follow-up saving for a given phase
 async function processSaveFollowup(req, res, phase) {
+  console.log('processSaveFollowup payload:', req.body);
   const {
     student_name,
     status,
@@ -127,7 +128,7 @@ async function processSaveFollowup(req, res, phase) {
     branchChange,
     branchChangeBool,
     exitFromSystembool,
-    AssignedTo
+    AssignedTo = null
   } = req.body;
   const targetColumn = `followup${phase}`;
   const targetDateColumn = `followup${phase}_date`;
@@ -263,14 +264,14 @@ async function processSaveFollowup(req, res, phase) {
       if (existingRows.length > 0) {
         await db.query(
           `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
-          [status, followup_date || new Date().toISOString(), AssignedTo, student_name]
+          [status, followup_date || new Date().toISOString(), AssignedTo || 'null', student_name]
         );
         triggerBackup();
         return res.status(200).send(`Updated ${targetColumn}`);
       } else {
         await db.query(
-          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
-          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), AssignedTo]
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), AssignedTo || 'null']
         );
         triggerBackup();
         return res.status(200).send(`Inserted into ${targetColumn}`);

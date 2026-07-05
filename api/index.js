@@ -116,7 +116,187 @@ async function triggerBackup() {
   }
 }
 
-// ─── Routes ──────────────────────────────────────────────────────────────────
+// ─── Routes ─────────────────────────────────────────────────────────────────-
+
+// Helper to process follow-up saving for a given phase
+async function processSaveFollowup(req, res, phase) {
+  const {
+    student_name,
+    status,
+    followup_date,
+    branchChange,
+    branchChangeBool,
+    exitFromSystembool,
+    AssignedTo
+  } = req.body;
+  const targetColumn = `followup${phase}`;
+  const targetDateColumn = `followup${phase}_date`;
+
+  if (branchChangeBool === true) {
+    try {
+      const newAssignedStaff = await autoAssignStaff(branchChange);
+      await db.query(
+        `UPDATE enquiry SET department = $1, "AssignedTo" = $2 WHERE student_name = $3`,
+        [branchChange, newAssignedStaff, student_name]
+      );
+      const { rows: existingRows } = await db.query(
+        `SELECT id FROM enquiries_status WHERE student_name = $1`,
+        [student_name]
+      );
+      if (existingRows.length > 0) {
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), newAssignedStaff, student_name]
+        );
+      }
+      triggerBackup();
+      return res.status(200).send("Branch and Assigned Staff Updated Successfully");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Database Error");
+    }
+  } else if (exitFromSystembool === true) {
+    try {
+      const { rows: rowsEnquiry } = await db.query(
+        `SELECT id FROM enquiry WHERE student_name = $1`,
+        [student_name]
+      );
+      if (rowsEnquiry.length > 0) {
+        await db.query(`UPDATE enquiry SET "AssignedTo" = 'null' WHERE id = $1`, [rowsEnquiry[0].id]);
+      }
+      const { rows: rowsStatus } = await db.query(
+        `SELECT id FROM enquiries_status WHERE student_name = $1`,
+        [student_name]
+      );
+      if (rowsStatus.length > 0) {
+        await db.query(`DELETE FROM enquiries_status WHERE id = $1`, [rowsStatus[0].id]);
+      }
+      triggerBackup();
+      return res.status(200).send("Student exited from system successfully");
+    } catch (err) {
+      console.error("Exit system error:", err);
+      return res.status(500).send("Database Error during exit");
+    }
+  } else if (status === "Direct 2nd Year Admission" || status === "Shift to Direct 2nd Year Admission") {
+    try {
+      const { rows: enqRows } = await db.query(`SELECT department FROM enquiry WHERE student_name = $1 LIMIT 1`, [student_name]);
+      const dept = enqRows.length > 0 ? enqRows[0].department : null;
+      let hodName = null;
+      if (dept) {
+        const { rows: hodRows } = await db.query(
+          `SELECT staff_name FROM staff WHERE department = $1 AND LOWER(designation) = 'hod' LIMIT 1`,
+          [dept]
+        );
+        hodName = hodRows.length > 0 ? hodRows[0].staff_name : null;
+      }
+      if (!hodName) return res.status(500).send(`No HOD found for department ${dept}`);
+      await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [hodName, student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
+      if (existingRows.length > 0) {
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), hodName, student_name]
+        );
+      } else {
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), hodName]
+        );
+      }
+      triggerBackup();
+      return res.status(200).send("Assigned to HOD");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Database Error during shift to direct 2nd year admission");
+    }
+  } else if (status === "Shift to Management") {
+    try {
+      const { rows: mgmtStaff } = await db.query(
+        `SELECT staff_name FROM staff WHERE department = 'MANAGEMENT' AND COALESCE(dont_assign, FALSE) = FALSE LIMIT 1`
+      );
+      const mgmtName = mgmtStaff.length > 0 ? mgmtStaff[0].staff_name : null;
+      if (!mgmtName) return res.status(500).send("No management staff available");
+      await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [mgmtName, student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
+      if (existingRows.length > 0) {
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), mgmtName, student_name]
+        );
+      } else {
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), mgmtName]
+        );
+      }
+      triggerBackup();
+      return res.status(200).send("Shifted to Management");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Database Error during shift to management");
+    }
+  } else if (status === "Management") {
+    try {
+      const newAssignedStaff = await autoAssignStaff("MANAGEMENT");
+      await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [newAssignedStaff, student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
+      if (existingRows.length > 0) {
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), newAssignedStaff, student_name]
+        );
+      } else {
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), newAssignedStaff]
+        );
+      }
+      triggerBackup();
+      return res.status(200).send("Assigned to Management Staff");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Database Error during Management re-assignment");
+    }
+  } else {
+    try {
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
+      if (existingRows.length > 0) {
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), AssignedTo, student_name]
+        );
+        triggerBackup();
+        return res.status(200).send(`Updated ${targetColumn}`);
+      } else {
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), AssignedTo]
+        );
+        triggerBackup();
+        return res.status(200).send(`Inserted into ${targetColumn}`);
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Database Error");
+    }
+  }
+}
+
+// Original /save-followup route now delegates to helper using the activePhase
+app.post("/save-followup", async (req, res) => {
+  await syncActivePhaseFromDb();
+  await processSaveFollowup(req, res, activePhase);
+});
+
+// New endpoint for explicit phase now delegates to helper
+app.post("/save-followup/:phase", async (req, res) => {
+  const phase = parseInt(req.params.phase, 10);
+  if (isNaN(phase) || phase < 1 || phase > 7) {
+    return res.status(400).send("Invalid phase");
+  }
+  await syncActivePhaseFromDb();
+  await processSaveFollowup(req, res, phase);
+});
 
 app.get("/", (req, res) => {
   res.redirect("/login.html");
@@ -520,31 +700,33 @@ app.get("/admin/switch-phase/:num", async (req, res) => {
   activePhase = requestedPhase;
   try {
     await persistActivePhase(activePhase);
-    res.send(`System is now writing to followup${activePhase}`);
-  } catch (err) {
-    res.status(500).send("Database error");
+    res.status(200).json({ message: `Active phase switched to ${activePhase}` });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Database Error");
+    }
   }
 });
 
-app.post("/admin/finalize-followup", async (req, res) => {
-  const user = getUser(req);
-  if (!user || user.role !== "admin") return res.status(401).json({ error: "Unauthorized" });
-  try {
-    await syncActivePhaseFromDb();
-    const nextPhase = getNextPhaseId(activePhase);
-    await persistActivePhase(nextPhase);
-    res.json({ success: true, phase: activePhase });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to finalize follow-up" });
+// New endpoint for explicit phase
+app.post("/save-followup/:phase", async (req, res) => {
+  const phase = parseInt(req.params.phase, 10);
+  if (isNaN(phase) || phase < 1 || phase > 7) {
+    return res.status(400).send("Invalid phase");
   }
-});
+  const {
+    student_name,
+    status,
+    followup_date,
+    branchChange,
+    branchChangeBool,
+    exitFromSystembool,
+    AssignedTo
+  } = req.body;
 
-app.post("/save-followup", async (req, res) => {
-  const { student_name, status, followup_date, branchChange, branchChangeBool, exitFromSystembool } = req.body;
   await syncActivePhaseFromDb();
-  const targetColumn = `followup${activePhase}`;
-  const targetDateColumn = `followup${activePhase}_date`;
+  const targetColumn = `followup${phase}`;
+  const targetDateColumn = `followup${phase}_date`;
 
   if (branchChangeBool === true) {
     try {
@@ -554,7 +736,7 @@ app.post("/save-followup", async (req, res) => {
         [branchChange, newAssignedStaff, student_name]
       );
       const { rows: existingRows } = await db.query(
-        "SELECT id FROM enquiries_status WHERE student_name = $1",
+        `SELECT id FROM enquiries_status WHERE student_name = $1`,
         [student_name]
       );
       if (existingRows.length > 0) {
@@ -576,10 +758,7 @@ app.post("/save-followup", async (req, res) => {
         [student_name]
       );
       if (rowsEnquiry.length > 0) {
-        await db.query(
-          `UPDATE enquiry SET "AssignedTo" = 'null' WHERE id = $1`,
-          [rowsEnquiry[0].id]
-        );
+        await db.query(`UPDATE enquiry SET "AssignedTo" = 'null' WHERE id = $1`, [rowsEnquiry[0].id]);
       }
       const { rows: rowsStatus } = await db.query(
         `SELECT id FROM enquiries_status WHERE student_name = $1`,
@@ -596,8 +775,10 @@ app.post("/save-followup", async (req, res) => {
     }
   } else if (status === "Direct 2nd Year Admission" || status === "Shift to Direct 2nd Year Admission") {
     try {
-      // Find the student's department, then assign to that dept's HOD
-      const { rows: enqRows } = await db.query(`SELECT department FROM enquiry WHERE student_name = $1 LIMIT 1`, [student_name]);
+      const { rows: enqRows } = await db.query(
+        `SELECT department FROM enquiry WHERE student_name = $1 LIMIT 1`,
+        [student_name]
+      );
       const dept = enqRows.length > 0 ? enqRows[0].department : null;
       let hodName = null;
       if (dept) {
@@ -607,13 +788,19 @@ app.post("/save-followup", async (req, res) => {
         );
         hodName = hodRows.length > 0 ? hodRows[0].staff_name : null;
       }
-      if (!hodName) return res.status(500).send("No HOD found for this department");
+      if (!hodName) return res.status(500).send(`No HOD found for department ${dept}`);
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [hodName, student_name]);
-      const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date || new Date().toISOString(), hodName, student_name]);
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), hodName, student_name]
+        );
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`, [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), hodName]);
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), hodName]
+        );
       }
       triggerBackup();
       return res.status(200).send("Assigned to HOD");
@@ -629,11 +816,17 @@ app.post("/save-followup", async (req, res) => {
       const mgmtName = mgmtStaff.length > 0 ? mgmtStaff[0].staff_name : null;
       if (!mgmtName) return res.status(500).send("No management staff available");
       await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [mgmtName, student_name]);
-      const { rows: existingRows } = await db.query("SELECT id FROM enquiries_status WHERE student_name = $1", [student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
       if (existingRows.length > 0) {
-        await db.query(`UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`, [status, followup_date || new Date().toISOString(), mgmtName, student_name]);
+        await db.query(
+          `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
+          [status, followup_date || new Date().toISOString(), mgmtName, student_name]
+        );
       } else {
-        await db.query(`INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`, [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), mgmtName]);
+        await db.query(
+          `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), mgmtName]
+        );
       }
       triggerBackup();
       return res.status(200).send("Shifted to Management");
@@ -644,14 +837,8 @@ app.post("/save-followup", async (req, res) => {
   } else if (status === "Management") {
     try {
       const newAssignedStaff = await autoAssignStaff("MANAGEMENT");
-      await db.query(
-        `UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`,
-        [newAssignedStaff, student_name]
-      );
-      const { rows: existingRows } = await db.query(
-        "SELECT id FROM enquiries_status WHERE student_name = $1",
-        [student_name]
-      );
+      await db.query(`UPDATE enquiry SET "AssignedTo" = $1 WHERE student_name = $2`, [newAssignedStaff, student_name]);
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
       if (existingRows.length > 0) {
         await db.query(
           `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
@@ -671,21 +858,18 @@ app.post("/save-followup", async (req, res) => {
     }
   } else {
     try {
-      const { rows: existingRows } = await db.query(
-        "SELECT id FROM enquiries_status WHERE student_name = $1",
-        [student_name]
-      );
+      const { rows: existingRows } = await db.query(`SELECT id FROM enquiries_status WHERE student_name = $1`, [student_name]);
       if (existingRows.length > 0) {
         await db.query(
           `UPDATE enquiries_status SET ${targetColumn} = $1, ${targetDateColumn} = $2, assigned_to = $3 WHERE student_name = $4`,
-          [status, followup_date || new Date().toISOString(), req.body.AssignedTo, student_name]
+          [status, followup_date || new Date().toISOString(), AssignedTo, student_name]
         );
         triggerBackup();
         return res.status(200).send(`Updated ${targetColumn}`);
       } else {
         await db.query(
           `INSERT INTO enquiries_status (student_name, ${targetColumn}, ${targetDateColumn}, created_at, assigned_to) VALUES ($1, $2, $3, $4, $5)`,
-          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), req.body.AssignedTo]
+          [student_name, status, followup_date || new Date().toISOString(), followup_date || new Date().toISOString(), AssignedTo]
         );
         triggerBackup();
         return res.status(200).send(`Inserted into ${targetColumn}`);

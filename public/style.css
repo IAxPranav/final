@@ -6,10 +6,10 @@
     --surface-2: #f1f5f4;
     --ink: #1f2937;
     --muted: #5b6674;
-    --primary: #6366f1;
-    --primary-strong: #4f46e5;
-    --accent: #06b6d4;
-    --accent-2: #0ea5e9;
+    --primary: #0f766e;
+    --primary-light: #14b8a6;
+    --accent: #f59e0b;
+    --accent-2: #fbbf24;
     --line: rgba(31, 41, 55, 0.12);
     --shadow: 0 24px 45px rgba(15, 23, 42, 0.15);
     --radius: 20px;
@@ -29,7 +29,7 @@ body {
     font-family: var(--font-body);
     color: var(--ink);
     background: url('login-bg.png') no-repeat center/cover;
-    background-color: rgba(99, 102, 241, 0.2);
+    background-color: rgba(15, 118, 110, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,7 +43,7 @@ body::before {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: rgba(79, 70, 229, 0.35);
+    background: linear-gradient(180deg, rgba(15,54,54,0.75) 0%, rgba(20,120,110,0.35) 100%);
 }
 
 .login-page {
@@ -103,9 +103,9 @@ body::before {
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 100%);
+    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
     backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25), 0 2px 8px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 8px 24px rgba(15, 118, 110, 0.2), 0 2px 8px rgba(15, 118, 110, 0.1);
     z-index: 100;
     padding: 16px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -305,12 +305,14 @@ body::before {
 .login-card {
     width: min(420px, calc(100% - 32px));
     background: rgba(255,255,255,0.97);
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(99, 102, 241, 0.18), 0 8px 16px rgba(15, 23, 42, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 20px 50px rgba(15,118,110,0.2);
     padding: 36px;
     backdrop-filter: blur(12px);
     margin-bottom: 24px;
     border: 1px solid rgba(255, 255, 255, 0.7);
+    border-top: 4px solid transparent;
+    border-image: linear-gradient(135deg, #0f766e, #14b8a6) 1;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -330,28 +332,33 @@ body::before {
 
 .login-card-head span {
     display: inline-block;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--primary);
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 10px;
     font-family: var(--font-display);
+    background: #e6f4f2;
+    padding: 6px 14px;
+    border-radius: 20px;
 }
 
 .login-card-head h2 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2.1rem;
     color: var(--ink);
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .login-card-head p {
     margin-top: 10px;
     color: var(--muted);
     font-size: 0.95rem;
-    line-height: 1.6;
+    line-height: 1.5;
+    letter-spacing: -0.2px;
 }
 
 .login-form {
@@ -385,9 +392,9 @@ body::before {
 
 .input-group input:focus {
     outline: none;
-    border-color: var(--primary);
+    border-color: #14b8a6;
     background: white;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
 }
 
 .password-wrapper {
@@ -407,13 +414,13 @@ body::before {
 }
 
 .toggle-password:hover {
-    color: var(--primary-strong);
+    color: var(--accent);
 }
 
 .login-btn {
     width: 100%;
     padding: 14px 16px;
-    background: linear-gradient(135deg, var(--primary-strong) 0%, var(--primary) 100%);
+    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
     color: white;
     border: none;
     border-radius: 12px;
@@ -421,19 +428,20 @@ body::before {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
     font-family: var(--font-display);
     letter-spacing: 0.4px;
 }
 
 .login-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #126b63 0%, #1ab39a 100%);
+    box-shadow: 0 12px 28px rgba(15, 118, 110, 0.35);
 }
 
 .login-btn:active {
     transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
 }
 
 .form-footer {
@@ -451,8 +459,8 @@ body::before {
 }
 
 .form-footer a:hover {
-    color: var(--primary-strong);
-    border-bottom: 2px solid var(--primary);
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
 }
 
 /* Tablet Screens Card (768px and below) */

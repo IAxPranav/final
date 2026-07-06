@@ -149,6 +149,22 @@ async function fetchAssignedEnquiries() {
     }
     const enquiries = await response.json();
     container.innerHTML = "";
+    // Provisional merit list check note (visible above assigned students)
+    container.insertAdjacentHTML('beforeend', `
+        <div style="background:#fff8c4;border-left:4px solid #ffcc00;padding:12px;margin-bottom:12px;color:#6b4b00;border-radius:6px;font-size:0.95rem;">
+            <strong>Check the following information of the candidates</strong>
+            <ol style="margin:8px 0 6px 20px;">
+                <li>Name</li>
+                <li>Date of Birth</li>
+                <li>Gender (Male/Female)</li>
+                <li>Category (SC/ST/NT/OBC etc.)</li>
+                <li>Minority Status</li>
+                <li>Marks etc. Information</li>
+            </ol>
+            <div>If everything is correct then add remark: <em style="font-weight:700">"Provisional merit list checked  all ok"</em></div>
+            <div style="margin-top:6px;">If there is any issue/error in the above information add remark as: <em style="font-weight:700">"Problem in Provisional merit list"</em></div>
+        </div>
+    `);
     if (enquiries.length === 0) {
         container.innerHTML = '<p style="color:var(--muted);padding:8px 0;">No students assigned to you yet.</p>';
         return;

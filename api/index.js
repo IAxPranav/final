@@ -60,6 +60,18 @@ db.query(`
   )
 `).catch(err => console.error("Table init error:", err));
 
+db.query(`
+  CREATE TABLE IF NOT EXISTS app_settings (
+    id INTEGER PRIMARY KEY,
+    current_phase INTEGER NOT NULL DEFAULT 1
+  )
+`).catch(err => console.error("app_settings table init error:", err));
+
+db.query(`
+  INSERT INTO app_settings (id, current_phase) VALUES (1, 1)
+  ON CONFLICT (id) DO NOTHING
+`).catch(err => console.error("app_settings seed error:", err));
+
 // ─── JWT Helpers ─────────────────────────────────────────────────────────────
 
 function signToken(user) {
@@ -682,13 +694,12 @@ async function syncActivePhaseFromDb() {
 }
 
 async function persistActivePhase(nextPhase = activePhase) {
-  try {
-    const phase = normalizePhase(nextPhase);
-    await db.query("INSERT INTO app_settings (id, current_phase) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET current_phase = EXCLUDED.current_phase", [phase]);
-    activePhase = phase;
-  } catch (err) {
-    console.error("Phase persist error:", err.message);
-  }
+  const phase = normalizePhase(nextPhase);
+  await db.query(
+    "INSERT INTO app_settings (id, current_phase) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET current_phase = EXCLUDED.current_phase",
+    [phase]
+  );
+  activePhase = phase;
 }
 
 app.get("/admin/get-current-phase", async (req, res) => {
@@ -705,6 +716,25 @@ app.get("/admin/switch-phase/:num", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Database Error");
+  }
+});
+
+app.post("/admin/finalize-followup", async (req, res) => {
+  const user = getUser(req);
+  if (!user || user.role !== "admin") {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  try {
+    await syncActivePhaseFromDb();
+    if (activePhase >= 7) {
+      return res.status(400).json({ error: "Already at the final follow-up phase" });
+    }
+    const nextPhase = getNextPhaseId(activePhase);
+    await persistActivePhase(nextPhase);
+    res.json({ success: true, phase: activePhase });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to finalize follow-up phase" });
   }
 });
 
